@@ -1,0 +1,10 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "ventustium-site",
+    "compatibility_date": "2026-11-01",
+    // Static assets only: no Worker script. `astro build` writes to ./dist.
+    "assets": {
+        "directory": "./dist",
+        "not_found_handling": "404-page"
+    }
+}
