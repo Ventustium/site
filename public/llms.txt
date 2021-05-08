@@ -1,0 +1,20 @@
+# Ventustium
+
+> Ventustium is the online alias of Kevin Luis Linuhung, a system infrastructure and DevOps enthusiast. ventustium.com is his personal site, in English (https://ventustium.com/) and Indonesian (https://ventustium.com/id/).
+
+- Name: Kevin Luis Linuhung (also "Kevin Linuhung", alias "ventustium")
+- Location: Indonesia (UTC+7)
+- Focus: system infrastructure, DevOps, self-hosting, networking
+- Stack: Linux, Docker, Kubernetes, MikroTik, Ruijie, Cloudflare, PHP, PostgreSQL, MySQL
+- Hobbies: osu!, PC games on Steam, translating Japanese web novels
+- Contact: kevin@ventustium.com
+
+## Links
+
+- [GitHub](https://github.com/ventustium): source code and side projects
+- [GitLab](https://gitlab.com/ventustium): source code and side projects
+- [WebNovels TL](https://syosetu.ventustium.com/): web novel translations
+- [Prose Realm](https://prose-realm.ventustium.com/): web novel series library
+- [Steam](https://steamcommunity.com/id/Ventustium/)
+- [osu!](https://osu.ppy.sh/users/10358128)
+- [Discord](https://discord.com/users/228468393110405122): username ventustium

@@ -1,0 +1,11 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Astro output with a content hash in the filename: safe to cache forever.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Unhashed files copied from public/assets. Rename or add ?v= when changing one.
+/assets/*
+  Cache-Control: public, max-age=604800
