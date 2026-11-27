@@ -362,8 +362,8 @@
         pending.id = setTimeout(function () { pending = null; fn(); }, ms);
     }
 
-    // queue = false only speeds up (wheel / trackpad, which are too noisy to trust with a step);
-    // swipes, keys and the pager also queue one step.
+    // queue = false only speeds up (wheel / trackpad, and swipes during the animation);
+    // keys, the pager and swipes during the rest also queue one step.
     function hurry(next, queue) {
         next = Math.max(0, Math.min(scenes.length - 1, next));
         // Speed up even at the first or last scene, where there is no next scene to queue.
@@ -534,8 +534,15 @@
         var dy = touchY - e.changedTouches[0].clientY;
         touchY = null;
         if (Math.abs(dy) <= 50) return;
-        if (dy > 0 && touchAtBottom) goTo(current + 1);
-        else if (dy < 0 && touchAtTop) goTo(current - 1);
+        var next;
+        if (dy > 0 && touchAtBottom) next = current + 1;
+        else if (dy < 0 && touchAtTop) next = current - 1;
+        else return;
+        // A swipe while the scene is still animating only speeds it up; it never queues a page,
+        // so a second swipe to hurry does not also run on into the next scene. During the rest
+        // after the scene has entered, a swipe is a deliberate step and is queued.
+        if (busy) hurry(next, dwelling);
+        else goTo(next);
     });
 
     window.addEventListener('keydown', function (e) {

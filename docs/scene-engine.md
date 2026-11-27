@@ -25,11 +25,11 @@ A scene taller than the screen (phones, short windows) scrolls inside itself (`.
 
 ### Rush mode
 
-Input that arrives while a scene is still animating never skips an animation. `hurry()` speeds every running Web Animation in the scenes up to `RUSH` (3×) and shortens the gap before the next scene. A swipe, an arrow or page key, or the pager also queues one more step, which plays at 3× as well. The wheel and trackpad only speed up and never queue, because their input is too noisy to trust with an extra page. Once a scene finishes with nothing queued, `pace` returns to 1. Only one step is queued: scrolling five times does not stack five moves.
+Input that arrives while a scene is still animating never skips an animation. `hurry()` speeds every running Web Animation in the scenes up to `RUSH` (3×) and shortens the gap before the next scene. An arrow or page key, or the pager also queues one more step, which plays at 3× as well. The wheel, the trackpad and a swipe only speed up and never queue: the wheel because its input is too noisy to trust with an extra page, and a swipe because on a phone a second swipe is how you hurry a scene, and it should not then run on into the next one. Once a scene finishes with nothing queued, `pace` returns to 1. Only one step is queued: scrolling five times does not stack five moves.
 
 - Wheel: one continuous scroll moves one scene, whether it is a mouse wheel spun on or a trackpad fling. To go further, scroll again after a pause of about 300 ms. Shrinking deltas (momentum) never count.
 - Every scene rests for `DWELL` (500 ms) after it has entered. Wheel input during the rest is ignored, so heavy scrolling stops on each page instead of running to the last one. A swipe, key, pager click or `#hash` link during the rest is kept and runs when it ends.
-- Swipe, arrow and page keys, and the pager hurry and queue straight away.
+- Arrow and page keys and the pager hurry and queue straight away. A swipe during the animation only hurries; a swipe during the rest is queued.
 - The typewriter and the scrambled labels are timers, so they follow `pace` themselves. A scrambled label reveals its letters at the current pace (faster in rush mode, even mid-way), while its random glyphs only change every `SCRAMBLE_SWAP` (60 ms) at any pace.
 - CSS animations (caret, live dot, scroll hint) are left alone.
 
