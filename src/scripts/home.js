@@ -19,6 +19,12 @@
     var pagerButtons = [];
     var current = 0;
     var busy = false;
+    /* Rush mode: input that arrives while a scene is still animating does not skip anything.
+       It speeds every running animation up to RUSH and queues one more step, which also
+       plays at RUSH. pace drops back to 1 once the visitor stops. */
+    var RUSH = 3;
+    var pace = 1;
+    var queued = null;
     var lastCharVariant = null;
 
     var moods = [
@@ -75,23 +81,37 @@
 
     /* ---------- scramble / decode text ---------- */
     var GLYPHS = '!<>-_\\/[]{}=+*^?#%&$@01';
+    var SCRAMBLE_SWAP = 60; // ms between random-glyph changes
     function scramble(el, duration, delay) {
         if (reduce) return;
         var final = el.getAttribute('data-final') || el.textContent;
         el.setAttribute('data-final', final);
         if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', final);
         if (el._scr) cancelAnimationFrame(el._scr);
-        var start = null;
+        // The reveal (left to right) advances with the current pace, so rush mode speeds it up
+        // even mid-way. The random glyphs only change every SCRAMBLE_SWAP ms at any pace, so
+        // they stay calm instead of flickering every frame.
+        var elapsed = -(delay || 0);
+        var last = null;
+        var lastSwap = -Infinity;
+        var shown = -1;
         function frame(t) {
-            if (start === null) start = t + (delay || 0);
-            var p = Math.max(0, Math.min(1, (t - start) / duration));
-            var out = '';
-            for (var i = 0; i < final.length; i++) {
-                var ch = final[i];
-                if (ch === ' ' || i < Math.floor(p * final.length)) out += ch;
-                else out += GLYPHS[(Math.random() * GLYPHS.length) | 0];
+            if (last === null) last = t;
+            elapsed += (t - last) * pace;
+            last = t;
+            var p = Math.max(0, Math.min(1, elapsed / duration));
+            var n = Math.floor(p * final.length);
+            if (n !== shown || t - lastSwap >= SCRAMBLE_SWAP) {
+                var out = '';
+                for (var i = 0; i < final.length; i++) {
+                    var ch = final[i];
+                    if (ch === ' ' || i < n) out += ch;
+                    else out += GLYPHS[(Math.random() * GLYPHS.length) | 0];
+                }
+                el.textContent = out;
+                shown = n;
+                lastSwap = t;
             }
-            el.textContent = out;
             if (p < 1) el._scr = requestAnimationFrame(frame);
             else { el.textContent = final; el._scr = null; }
         }
@@ -121,7 +141,7 @@
             i++;
             typed.textContent = full.slice(0, i);
             rest.textContent = full.slice(i);
-            if (i < full.length) el._typeT = setTimeout(tick, speed + Math.random() * 20);
+            if (i < full.length) el._typeT = setTimeout(tick, (speed + Math.random() * 20) / pace);
         }
         el._typeT = setTimeout(tick, delay);
         return full.length * (speed + 15);
@@ -234,7 +254,7 @@
                 if (reduce) return null;
                 if (tr.prev) tr.t += 150;
                 tr.prev = type;
-                typeText(el, tr.t);
+                typeText(el, tr.t / pace);
                 tr.t += 250;
                 return null;
             }
@@ -326,9 +346,62 @@
         });
     }
 
+    // Our own Web Animations in a scene (not CSS animations such as the caret or the live dot).
+    function setPace(scene) {
+        scene.getAnimations({ subtree: true }).forEach(function (a) {
+            if (window.CSSAnimation && a instanceof CSSAnimation) return;
+            if (window.CSSTransition && a instanceof CSSTransition) return;
+            a.playbackRate = pace;
+        });
+    }
+
+    // The gap between the leaving and the entering scene, as a timer that hurry() can shorten.
+    var pending = null;
+    function later(fn, ms) {
+        pending = { fn: fn, due: performance.now() + ms };
+        pending.id = setTimeout(function () { pending = null; fn(); }, ms);
+    }
+
+    // queue = false only speeds up (wheel / trackpad, which are too noisy to trust with a step);
+    // swipes, keys and the pager also queue one step.
+    function hurry(next, queue) {
+        next = Math.max(0, Math.min(scenes.length - 1, next));
+        // Speed up even at the first or last scene, where there is no next scene to queue.
+        if (queue !== false && next !== current) queued = next; // one step at most; the newest input wins
+        if (dwelling || pace === RUSH) return; // nothing left to speed up while resting
+        pace = RUSH;
+        scenes.forEach(setPace);
+        if (pending) {
+            clearTimeout(pending.id);
+            later(pending.fn, Math.max(0, pending.due - performance.now()) / RUSH);
+        }
+    }
+
+    // A scene finished entering: take the queued step (still at RUSH), or calm down.
+    // Every scene rests for DWELL ms after it has entered. Wheel input during the rest is ignored,
+    // so heavy scrolling stops on each page instead of running to the end. Deliberate input
+    // (swipe, keys, pager, a #hash link) is kept and runs when the rest is over.
+    var DWELL = 500;
+    var dwelling = false;
+    function entered() {
+        dwelling = true;
+        setTimeout(function () {
+            dwelling = false;
+            busy = false;
+            wheelAcc = 0;
+            // A swipe, key, pager click or link that arrived during the animation or the rest
+            // runs now; the wheel never queues (see hurry), so it cannot run past this page.
+            var q = queued;
+            queued = null;
+            if (q !== null && q !== current) goTo(q);
+            else pace = 1;
+        }, DWELL / pace);
+    }
+
     function goTo(next) {
         next = Math.max(0, Math.min(scenes.length - 1, next));
-        if (busy || next === current) return;
+        if (busy) { hurry(next); return; }
+        if (next === current) return;
         busy = true;
 
         var dir = next > current ? 1 : -1;
@@ -344,11 +417,14 @@
             from.classList.remove('is-leaving');
             anims.forEach(function (a) { a.cancel(); });
         });
+        setPace(from);
 
-        setTimeout(function () {
+        later(function () {
             activate(next);
-            playIn(to, dir).then(function () { busy = false; wheelAcc = 0; });
-        }, reduce ? 150 : 420);
+            to.scrollTop = dir > 0 ? 0 : to.scrollHeight;
+            playIn(to, dir).then(entered);
+            setPace(to);
+        }, (reduce ? 150 : 420) / pace);
     }
 
     /* ---------- pager ---------- */
@@ -383,36 +459,95 @@
     });
 
     /* ---------- input ---------- */
+    /* A scene taller than the screen scrolls inside itself (see .js .scene in home.css).
+       Input scrolls it first and only switches scenes from its top or bottom edge. */
+    function canScroll(scene, d) { // d: 1 = down, -1 = up
+        if (scene.scrollHeight <= scene.clientHeight + 1) return false;
+        return d > 0 ? scene.scrollTop + scene.clientHeight < scene.scrollHeight - 1 : scene.scrollTop > 0;
+    }
+    var lastInnerScroll = 0;
+
     var wheelAcc = 0;
     var wheelTimer = null;
+    var wheelSpent = false; // the gesture that started the current transition
+    var wheelQuiet = null;
+    var lastAbs = 0;
+    var rushAcc = 0;
     window.addEventListener('wheel', function (e) {
+        var d = e.deltaY > 0 ? 1 : -1;
+        var ad = Math.abs(e.deltaY);
+        var decaying = ad < lastAbs; // trackpad momentum only ever shrinks
+        lastAbs = ad;
+        clearTimeout(wheelQuiet);
+        // 300 ms of silence ends a gesture; momentum tails thin out but rarely pause that long
+        wheelQuiet = setTimeout(function () { wheelSpent = false; lastAbs = 0; rushAcc = 0; }, 300);
+        if (!busy && canScroll(scenes[current], d)) { // let the scene scroll natively
+            lastInnerScroll = Date.now();
+            wheelAcc = 0;
+            return;
+        }
         e.preventDefault();
-        if (busy) return;
+        if (busy) {
+            // Only a new gesture (after a 300 ms pause) counts, and never while it is decaying
+            // (momentum). One continuous scroll, mouse or trackpad, therefore moves one scene.
+            if (dwelling || decaying || wheelSpent) return;
+            rushAcc += e.deltaY;
+            if (Math.abs(rushAcc) > 90) {
+                hurry(current + (rushAcc > 0 ? 1 : -1), false); // speed up only, never an extra page
+                rushAcc = 0;
+                wheelSpent = true;
+            }
+            return;
+        }
+        rushAcc = 0;
+        // the scroll that already moved a scene must pause before it can move another
+        if (wheelSpent) return;
+        // trackpad momentum that just hit the edge must not carry on into the next scene
+        if (Date.now() - lastInnerScroll < 350) { lastInnerScroll = Date.now(); return; }
         wheelAcc += e.deltaY;
         clearTimeout(wheelTimer);
         wheelTimer = setTimeout(function () { wheelAcc = 0; }, 180);
         if (Math.abs(wheelAcc) > 45) {
             var d = wheelAcc > 0 ? 1 : -1;
             wheelAcc = 0;
+            wheelSpent = true;
             goTo(current + d);
         }
     }, { passive: false });
 
     var touchY = null;
-    stage.addEventListener('touchstart', function (e) { touchY = e.touches[0].clientY; }, { passive: true });
-    stage.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+    var touchAtTop = true;
+    var touchAtBottom = true;
+    stage.addEventListener('touchstart', function (e) {
+        touchY = e.touches[0].clientY;
+        // a swipe switches scenes only if it starts at the edge it moves past
+        touchAtTop = !canScroll(scenes[current], -1);
+        touchAtBottom = !canScroll(scenes[current], 1);
+    }, { passive: true });
+    stage.addEventListener('touchmove', function (e) {
+        if (touchY === null) return;
+        var d = touchY - e.touches[0].clientY > 0 ? 1 : -1;
+        if (!canScroll(scenes[current], d)) e.preventDefault(); // otherwise the scene scrolls natively
+    }, { passive: false });
     stage.addEventListener('touchend', function (e) {
         if (touchY === null) return;
         var dy = touchY - e.changedTouches[0].clientY;
         touchY = null;
-        if (Math.abs(dy) > 50) goTo(current + (dy > 0 ? 1 : -1));
+        if (Math.abs(dy) <= 50) return;
+        if (dy > 0 && touchAtBottom) goTo(current + 1);
+        else if (dy < 0 && touchAtTop) goTo(current - 1);
     });
 
     window.addEventListener('keydown', function (e) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
         switch (e.key) {
-            case 'ArrowDown': case 'PageDown': case ' ': e.preventDefault(); goTo(current + (e.shiftKey && e.key === ' ' ? -1 : 1)); break;
-            case 'ArrowUp': case 'PageUp': e.preventDefault(); goTo(current - 1); break;
+            case 'ArrowDown': case 'PageDown': case ' ': case 'ArrowUp': case 'PageUp':
+                e.preventDefault();
+                var kd = (e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) ? -1 : 1;
+                var sc = scenes[current];
+                if (canScroll(sc, kd)) sc.scrollBy({ top: kd * sc.clientHeight * 0.8, behavior: reduce ? 'auto' : 'smooth' });
+                else goTo(current + kd);
+                break;
             case 'Home': e.preventDefault(); goTo(0); break;
             case 'End': e.preventDefault(); goTo(scenes.length - 1); break;
         }
@@ -431,7 +566,7 @@
     applyMood(current);
     setChrome(current);
     busy = true;
-    playIn(scenes[current], 1, 200).then(function () { busy = false; });
+    playIn(scenes[current], 1, 200).then(entered);
 })();
 
 /* copy-to-clipboard buttons (tip jar address). Independent of the scene engine. */

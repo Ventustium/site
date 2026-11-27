@@ -21,7 +21,21 @@
 | Pager button | that scene |
 | URL hash (`/#wallet`) | that scene, on load and on `hashchange` |
 
+A scene taller than the screen (phones, short windows) scrolls inside itself (`.js .scene` has `overflow-y: auto`). Wheel, swipe and the keys above scroll it first; they switch scenes only from its top or bottom edge. A swipe must start at that edge, and wheel momentum that has just scrolled the scene is ignored for 350 ms, so a fling never skips into the next scene. Entering a scene going down starts at its top; coming back up starts at its bottom.
+
+### Rush mode
+
+Input that arrives while a scene is still animating never skips an animation. `hurry()` speeds every running Web Animation in the scenes up to `RUSH` (3×) and shortens the gap before the next scene. A swipe, an arrow or page key, or the pager also queues one more step, which plays at 3× as well. The wheel and trackpad only speed up and never queue, because their input is too noisy to trust with an extra page. Once a scene finishes with nothing queued, `pace` returns to 1. Only one step is queued: scrolling five times does not stack five moves.
+
+- Wheel: one continuous scroll moves one scene, whether it is a mouse wheel spun on or a trackpad fling. To go further, scroll again after a pause of about 300 ms. Shrinking deltas (momentum) never count.
+- Every scene rests for `DWELL` (500 ms) after it has entered. Wheel input during the rest is ignored, so heavy scrolling stops on each page instead of running to the last one. A swipe, key, pager click or `#hash` link during the rest is kept and runs when it ends.
+- Swipe, arrow and page keys, and the pager hurry and queue straight away.
+- The typewriter and the scrambled labels are timers, so they follow `pace` themselves. A scrambled label reveals its letters at the current pace (faster in rush mode, even mid-way), while its random glyphs only change every `SCRAMBLE_SWAP` (60 ms) at any pace.
+- CSS animations (caret, live dot, scroll hint) are left alone.
+
 The engine updates the hash with `history.replaceState` as you move between scenes.
+
+The scroll hint at the bottom (`.hint`) is three chevrons that light up top to bottom, with the translated `chrome.scroll` label under them. It hides on the last scene.
 
 ## Markup contract
 
@@ -30,14 +44,14 @@ The engine reads these attributes, so components must keep them:
 | Attribute | On | Meaning |
 | --- | --- | --- |
 | `class="scene"` | `<section>` | one scene |
-| `id` | scene | URL hash. Keep `home`, `code`, `play`, `contact` and `wallet` stable and the same in every language, because they are linked from outside (for example the `/wallet` redirect). |
+| `id` | scene | URL hash. Keep `home`, `code`, `play`, `project`, `contact` and `wallet` stable and the same in every language, because they are linked from outside (for example the `/wallet` redirect). |
 | `data-title` | scene | pager label (translated) |
 | `data-out` | scene | how the scene leaves: `zoom`, `items` or `slide` |
 | `data-a` | any element | entrance animation: `fade`, `wipe`, `tilt`, `pill`, `pop`, `rise`, `ghost`, `logo`, `type` |
 | `data-split` | heading | split into `words` or `chars` before animating (see `Heading.astro`) |
 | `data-variant` | split heading | character effect: `flip`, `zoom` or `scatter` |
 | `data-scramble` | text | scrambled-letter reveal |
-| `data-track="<ms>"` | container | its `data-a` elements run on their own timeline starting `<ms>` after the scene opens, in parallel with the rest (used on `.cards` and `.wallet`) |
+| `data-track="<ms>"` | container | its `data-a` elements run on their own timeline starting `<ms>` after the scene opens, in parallel with the rest (used on `.cards`, `.showcase` and `.wallet`) |
 | `data-src` | `<img>` | image loaded only when its scene first opens |
 | `data-copy` | `<button>` | copies the text of the element matching this selector |
 | `data-done` | copy button | label shown after copying |
@@ -53,7 +67,7 @@ Cards and the wallet panel use `backdrop-filter: blur(8px)` over the particles. 
 
 So:
 
-- Put `data-a` on the frosted element itself (`a.card`, `.wallet`), never on a wrapper. The element's own opacity, clip and filter then apply to its blur, and the frosted glass animates in with the card. On a wrapper, the blur appears only after the animation ends.
+- Put `data-a` on the frosted element itself (`a.card`, `.showcase`, `.wallet`), never on a wrapper. The element's own opacity, clip and filter then apply to its blur, and the frosted glass animates in with the card. On a wrapper, the blur appears only after the animation ends.
 - For 3D motion, write `perspective(...)` inside the keyframe `transform` (see `tilt` in `home.js`) instead of setting `perspective` on a parent.
 - Do not use `mix-blend-mode` anywhere inside `.stage`.
 
@@ -72,8 +86,8 @@ The large word behind each scene comes from `src/components/GhostWord.astro`. It
 Placement:
 
 - It sits behind the content (`z-index: -1`).
-- In split scenes on wide screens (over 860px), its inner edge is pinned to the inner edge of the text column with `calc()` on `--split-gap`, and it grows toward the screen edge. It therefore never goes under the cards, whose frosted blur would hide it. It is on the left in `code` and `wallet`, and on the right in `play` (`.split--flip`).
-- On narrow screens, where the layout stacks, it sits at the right (top right below 640px).
+- In split scenes laid out side by side (over 720px), its inner edge is pinned to the inner edge of the text column with `calc()` on `--split-gap`, and it grows toward the screen edge. It therefore never goes under the cards, whose frosted blur would hide it. It is on the left in `code`, `play` and `wallet`, and on the right in `project` (`.split--flip`).
+- At 720px and below, where two-column scenes stack, it sits at the top right, by the title.
 
 Entrance: the ghost word is the scene's opener. It fades in over 500 ms while `drawGhost()` in `home.js` "handwrites" the outline. It animates `stroke-dasharray` from `0 160` to `160 0`, so the outline of every glyph is split into 160-unit dashes that all grow at once: each letter is written by 2–3 pens at the same time, and all letters together. The rest of the scene (text column and `data-track` columns) starts after `GHOST_LEAD`, without waiting for the outline to finish. Because the content has its own fade, it becomes visible about halfway through the draw. Scenes without a ghost word (home) start right away.
 
