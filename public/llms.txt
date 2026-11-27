@@ -14,7 +14,7 @@
 - [GitHub](https://github.com/ventustium): source code and side projects
 - [GitLab](https://gitlab.com/ventustium): source code and side projects
 - [WebNovels TL](https://syosetu.ventustium.com/): web novel translations
-- [Prose Realm](https://prose-realm.ventustium.com/): web novel series library
+- [Prose Realm](https://prose-realm.ventustium.com/): light novel and web novel catalog, live and in active development
 - [Steam](https://steamcommunity.com/id/Ventustium/)
 - [osu!](https://osu.ppy.sh/users/10358128)
 - [Discord](https://discord.com/users/228468393110405122): username ventustium

@@ -38,6 +38,28 @@
         },
         "desc": "Clicking circles to the beat, whatever is in my Steam library, and translating web novels I can't stop reading."
     },
+    "project": {
+        "nav": "project",
+        "label": "now building",
+        "ghost": "wip",
+        "title": {
+            "lead": "prose ",
+            "accent": "realm"
+        },
+        "desc": "A home for light novel and web novel readers: browse series by type and status, keep your own library, and jump to the official sources. It's live, and I'm still building it, so new features land often.",
+        "featuresLabel": "Features",
+        "features": [
+            "light & web novels",
+            "search & filters",
+            "personal library",
+            "series requests",
+            "EN / ID"
+        ],
+        "status": "live · in active development",
+        "tagline": "A home for light novel and web novel readers.",
+        "imageAlt": "Screenshot of the Prose Realm home page",
+        "cta": "take a look"
+    },
     "contact": {
         "nav": "contact",
         "label": "contact",

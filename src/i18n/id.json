@@ -38,6 +38,28 @@
         },
         "desc": "Mengklik lingkaran mengikuti irama, main apa saja yang ada di library Steam, dan menerjemahkan web novel yang tidak bisa berhenti saya baca."
     },
+    "project": {
+        "nav": "proyek",
+        "label": "sedang dikerjakan",
+        "ghost": "wip",
+        "title": {
+            "lead": "prose ",
+            "accent": "realm"
+        },
+        "desc": "Rumah untuk pembaca light novel dan web novel: cari seri berdasarkan tipe dan status, simpan di library sendiri, lalu lanjut ke sumber resminya. Sudah bisa dipakai dan masih terus saya kembangkan, jadi fitur baru sering bertambah.",
+        "featuresLabel": "Fitur",
+        "features": [
+            "light & web novel",
+            "pencarian & filter",
+            "library pribadi",
+            "request seri",
+            "EN / ID"
+        ],
+        "status": "live · sedang dikembangkan",
+        "tagline": "Rumah untuk pembaca light novel dan web novel.",
+        "imageAlt": "Tangkapan layar halaman utama Prose Realm",
+        "cta": "lihat"
+    },
     "contact": {
         "nav": "kontak",
         "label": "kontak",

@@ -9,7 +9,7 @@ interface Props { locale: Locale }
 const s = t(Astro.props.locale).play;
 ---
 <section class="scene" id="play" data-title={s.nav} data-out="slide">
-    <div class="scene-inner split split--flip">
+    <div class="scene-inner split">
         <GhostWord word={s.ghost} />
         <div class="text">
             <p class="label" data-a="fade">{s.label}</p>

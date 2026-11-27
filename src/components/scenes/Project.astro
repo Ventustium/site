@@ -1,0 +1,33 @@
+---
+// Featured project: Prose Realm, live and still in active development.
+import GhostWord from '../GhostWord.astro';
+import Heading from '../Heading.astro';
+import { displayUrl, project } from '../../data/site';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props { locale: Locale }
+const s = t(Astro.props.locale).project;
+---
+<section class="scene" id="project" data-title={s.nav} data-out="items">
+    <div class="scene-inner split split--flip">
+        <GhostWord word={s.ghost} />
+        <div class="text">
+            <p class="label" data-a="fade">{s.label}</p>
+            <Heading split="words" {...s.title} />
+            <p class="desc" data-a="fade">{s.desc}</p>
+            <ul class="stack" aria-label={s.featuresLabel}>
+                {s.features.map((f) => <li data-a="fade">{f}</li>)}
+            </ul>
+        </div>
+        <!-- Frosted panel: data-a sits on it directly so its blur animates in with it (see docs/scene-engine.md). -->
+        <a class="showcase" data-a="rise" data-track="350" href={project.url}>
+            <!-- img[data-src] is loaded by home.js only when this scene is opened. -->
+            <img class="shot" data-src={project.image} width="840" height="525" alt={s.imageAlt}>
+            <span class="status"><span class="dot" aria-hidden="true"></span>{s.status}</span>
+            <span class="name">{project.name}</span>
+            <span class="tagline">{s.tagline}</span>
+            <span class="cta"><span>{s.cta}</span><span class="arrow" aria-hidden="true">↗</span></span>
+            <span class="url">{displayUrl(project.url)}</span>
+        </a>
+    </div>
+</section>

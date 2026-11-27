@@ -48,6 +48,14 @@ export function displayUrl(url: string): string {
 /** Every profile, for schema.org sameAs. */
 export const sameAs = [...codeLinks, ...playLinks].map((l) => l.url).concat(discord.url);
 
+/** Featured project (the "project" scene). */
+export const project = {
+    name: 'Prose Realm',
+    url: 'https://prose-realm.ventustium.com/',
+    /** Screenshot of the home page (dark theme), 840x525 WebP. Rename it when replacing it. */
+    image: '/assets/image/prose-realm-2.webp',
+};
+
 export const wallet = {
     network: 'Ethereum',
     address: '0x559047a3F42bAC5C1D65626BDFEC56807b4AcB31',

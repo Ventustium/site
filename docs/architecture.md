@@ -15,7 +15,7 @@ src/
   layouts/Base.astro    <html> and <head>: meta tags, Open Graph, hreflang, JSON-LD
   components/
     HomePage.astro      the whole page for one locale
-    scenes/             Intro, Code, Play, Contact, Wallet (one per scene)
+    scenes/             Intro, Code, Play, Project, Contact, Wallet (one per scene)
     Heading.astro       scene title with a gradient accent
     Card.astro          link card
     Pill.astro          Discord / email pill
@@ -34,7 +34,7 @@ public/                 copied to dist/ as-is (see deployment.md)
 ## How a page is rendered
 
 1. `src/pages/index.astro` renders `<HomePage locale="en" />`. `src/pages/[locale]/index.astro` renders the same component once for every other published language, from `getStaticPaths()`.
-2. `HomePage.astro` wraps everything in `Base.astro` and renders the five scenes in order, passing `locale` down.
+2. `HomePage.astro` wraps everything in `Base.astro` and renders the six scenes in order, passing `locale` down.
 3. Each scene calls `t(locale)` from `src/i18n/ui.ts` for its text and imports links and other shared values from `src/data/site.ts`.
 4. `Base.astro` builds the `<head>` for that locale and imports `home.css`. Astro bundles and hashes the CSS and `home.js` into `/_astro/`.
 

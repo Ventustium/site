@@ -26,6 +26,14 @@ Update `public/llms.txt` as well when links change.
 
 `stack` in `src/data/site.ts` renders as the tags on the code scene and feeds `knowsAbout` in the JSON-LD. The meta description and bio in the locale JSON also name some of these tools, so update those too.
 
+## Featured project
+
+The `project` scene promotes Prose Realm as a live project in active development. Its name and URL are `project` in `src/data/site.ts`. The text, feature chips and status line ("live · in active development") are the `project` group in the locale JSON. The pulsing dot next to the status is CSS (`.showcase .dot`).
+
+The panel shows a screenshot, `project.image` (`public/assets/image/prose-realm-2.webp`, 840×525 WebP of the home page in dark mode). It loads only when the scene opens, and is hidden on short phones (720px wide or less and 760px tall or less), where the stacked scene has no room for it. To refresh it, take a new 1280×800 screenshot (scroll the page first so lazy-loaded covers appear, then back to the top), convert it (for example `magick shot.png -resize 840x -quality 78 new-name.webp`), give it a new filename because `/assets/` is cached for 7 days, and update `project.image`.
+
+To feature another project, change `project` in `site.ts` and the `project` text. If it is finished, also change `status` and `label`.
+
 ## Tip jar
 
 `wallet` in `src/data/site.ts` holds the network, the address and the paths to the QR code and logo. When the address changes, regenerate `public/assets/image/wallet-eth-qr.svg` and give it a new filename. `/assets/` is cached for 7 days (see [deployment.md](deployment.md)).
