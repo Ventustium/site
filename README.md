@@ -57,6 +57,56 @@ npm run deploy     # build and deploy production (requires wrangler login)
 npm run deploy:dev # build and deploy the staging Worker
 ```
 
+## From a change to production
+
+`main` is production ([ventustium.com](https://ventustium.com)). `dev` is staging ([dev-ui.ventustium.com](https://dev-ui.ventustium.com)). A push to `main` deploys production and a push to any other branch deploys staging, both through Cloudflare Workers Builds. Never work on `main` directly.
+
+**1. Work on `dev`.**
+
+```bash
+git switch dev
+git pull                  # pick up anything already on origin/dev
+```
+
+**2. Change and check locally.**
+
+```bash
+npm run dev               # edit with live reload on http://localhost:4321
+npm run check             # must report 0 errors
+npm run preview           # the real Cloudflare build on http://localhost:8787
+```
+
+**3. Commit and push to staging.**
+
+```bash
+git add <files>
+git commit -m "fix(scenes): what changed"
+git push origin dev       # Workers Builds deploys dev-ui.ventustium.com in about a minute
+```
+
+`npm run deploy:dev` deploys the same staging Worker from your machine, without a push.
+
+**4. Test staging.** Open [dev-ui.ventustium.com](https://dev-ui.ventustium.com) on a computer and on a phone. To confirm the new build is live, compare its script name with your local build:
+
+```bash
+curl -s https://dev-ui.ventustium.com/ | grep -o '/_astro/[^"]*\.js'
+ls dist/_astro/*.js
+```
+
+**5. Release to production** once staging is right.
+
+```bash
+git switch main
+git pull --ff-only
+git merge --ff-only dev   # fails if main has commits dev lacks; merge main into dev first
+git push origin main      # Workers Builds deploys ventustium.com
+git switch dev            # go back to work
+```
+
+**6. Check production.** After about a minute, the same command against `https://ventustium.com/` should show the same script name as staging, and the site should load.
+
+If a release goes wrong, roll back to the previous version under the `site` Worker's **Deployments** tab in the Cloudflare dashboard, then fix it on `dev`. Details, including the Workers Builds settings, are in [docs/deployment.md](docs/deployment.md).
+
 ## Documentation
 
 How the site works, from the scene engine to translations and caching, is documented in [docs/](docs/README.md).
