@@ -1,10 +1,27 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "ventustium-site",
+    // Must match the Worker name in the Cloudflare dashboard.
+    "name": "site",
     "compatibility_date": "2026-11-01",
     // Static assets only: no Worker script. `astro build` writes to ./dist.
     "assets": {
         "directory": "./dist",
         "not_found_handling": "404-page"
+    },
+    // Custom domains attached in the dashboard. Without these, a deploy detaches them.
+    "routes": [
+        { "pattern": "ventustium.com", "custom_domain": true },
+        { "pattern": "www.ventustium.com", "custom_domain": true }
+    ],
+    "workers_dev": true,
+    "preview_urls": true,
+    "observability": {
+        "enabled": false,
+        "logs": {
+            "enabled": true,
+            "head_sampling_rate": 1,
+            "invocation_logs": true,
+            "persist": true
+        }
     }
 }
