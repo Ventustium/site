@@ -156,8 +156,10 @@ a { color: inherit; text-decoration: none; }
    .rest is a line-break opportunity (a half-typed "DevOps e|nthusiast" wrapped mid-word) and
    at the end of the text it can push the line over the width, making the centred text jump.
    Absolutely positioned with no offsets, it is drawn at its static position (right after the
-   last typed character) but is out of flow, so it neither takes space nor allows a break. */
-.about.typing .typed::after {
+   last typed character) but is out of flow, so it neither takes space nor allows a break.
+   .typed only exists once home.js types the line, and the caret keeps blinking after the
+   text is complete (no caret without JS or with reduced motion, where nothing is typed). */
+.about .typed::after {
     content: "";
     position: absolute;
     width: .55em;

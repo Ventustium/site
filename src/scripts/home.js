@@ -114,7 +114,7 @@
         el.textContent = '';
         el.appendChild(typed);
         el.appendChild(rest);
-        el.classList.add('typing');
+        // The caret is .typed::after (home.css), so it stays and keeps blinking after typing ends.
         var speed = 18;
         var i = 0;
         function tick() {
@@ -122,7 +122,6 @@
             typed.textContent = full.slice(0, i);
             rest.textContent = full.slice(i);
             if (i < full.length) el._typeT = setTimeout(tick, speed + Math.random() * 20);
-            else el._typeT = setTimeout(function () { el.classList.remove('typing'); }, 1600);
         }
         el._typeT = setTimeout(tick, delay);
         return full.length * (speed + 15);
