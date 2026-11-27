@@ -17,8 +17,14 @@ npm run deploy    # build and deploy (run `npx wrangler login` once first)
 
 `wrangler.jsonc` deploys `dist/` as Workers static assets with no Worker script:
 
+- `name` is `site`, the name of the Worker in the Cloudflare dashboard. Changing it makes `wrangler deploy` create a separate Worker.
 - `assets.directory` is `./dist`.
 - `not_found_handling: "404-page"` serves `dist/404.html` for unknown paths.
+- `routes` lists the custom domains `ventustium.com` and `www.ventustium.com`. `workers_dev`, `preview_urls` and `observability` match the dashboard settings.
+
+`wrangler.jsonc` must match the dashboard. A setting that exists only in the dashboard can be overwritten by the next deploy. For example, a custom domain missing from `routes` is detached. After changing a Worker setting in the dashboard, copy it into `wrangler.jsonc`.
+
+The WAF rule that blocks vulnerability scanners is set in the dashboard, not here. See [security.md](security.md).
 
 Cloudflare applies two files in `dist/`:
 

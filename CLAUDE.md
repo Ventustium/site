@@ -41,5 +41,6 @@ Read the relevant file in `docs/` before changing that area:
 - [docs/scene-engine.md](docs/scene-engine.md): `home.js`, input handling, the markup contract
 - [docs/seo.md](docs/seo.md): meta tags, Open Graph, JSON-LD, sitemap
 - [docs/deployment.md](docs/deployment.md): Cloudflare config, caching, verification
+- [docs/security.md](docs/security.md): finding 404 paths, the WAF rule that blocks scanners
 
 Update the matching doc when you change behaviour it describes.
