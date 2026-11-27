@@ -19,14 +19,13 @@ npm run deploy    # build and deploy (run `npx wrangler login` once first)
 
 - `assets.directory` is `./dist`.
 - `not_found_handling: "404-page"` serves `dist/404.html` for unknown paths.
-- `/id` redirects to `/id/` (Cloudflare's default trailing-slash handling).
 
-Cloudflare applies two files from `public/`:
+Cloudflare applies two files in `dist/`:
 
-- `_redirects`: `/wallet` → `/#wallet` and `/id/wallet` → `/id/#wallet` (301).
-- `_headers`: the security and cache headers below.
+- `_headers`, copied from `public/`: the security and cache headers below.
+- `_redirects`, **generated** after each build by the `cloudflare-redirects` integration in `astro.config.mjs`, from `LANGUAGES` in `src/config.ts`. It always has `/wallet` → `/#wallet` (301). A published language gets `/<locale>/wallet` → `/<locale>/#wallet` (301). A hidden language gets `/<locale>` and `/<locale>/*` → `/` (302, since it may come back). Do not add a `public/_redirects`.
 
-`npm run dev` ignores both files. Use `npm run preview` to test them.
+`npm run dev` ignores both files. Astro's `redirects` option in `astro.config.mjs` mirrors the hidden-language redirect so `/id/` behaves the same in dev. Use `npm run preview` to test the real files.
 
 ## Caching
 
@@ -54,11 +53,11 @@ There are no automated tests. Before deploying:
    done
    ```
 
-   Expect `200`, `200`, `301` and `404`.
+   Expect `200`, `302` (Indonesian off; `200` when on), `301` and `404`.
 4. For visual checks, take a headless screenshot. `--force-prefers-reduced-motion` keeps the screenshot from catching the scenes mid-animation:
 
    ```bash
    chromium --headless=new --hide-scrollbars --force-prefers-reduced-motion \
      --window-size=1440,900 --virtual-time-budget=8000 \
-     --screenshot=out.png "http://localhost:8787/id/#wallet"
+     --screenshot=out.png "http://localhost:8787/#wallet"
    ```

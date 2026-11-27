@@ -1,6 +1,6 @@
 # Ventustium
 
-> Ventustium is the online alias of Kevin Luis Linuhung, a system infrastructure and DevOps enthusiast. ventustium.com is his personal site, in English (https://ventustium.com/) and Indonesian (https://ventustium.com/id/).
+> Ventustium is the online alias of Kevin Luis Linuhung, a system infrastructure and DevOps enthusiast. ventustium.com is his personal site.
 
 - Name: Kevin Luis Linuhung (also "Kevin Linuhung", alias "ventustium")
 - Location: Indonesia (UTC+7)

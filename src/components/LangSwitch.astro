@@ -4,8 +4,10 @@ import { homePath, htmlLang, localeNames, locales, t, type Locale } from '../i18
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 ---
-<nav class="lang" aria-label={t(locale).chrome.language}>
-    {locales.map((l) => (
-        <a href={homePath(l)} hreflang={htmlLang[l]} lang={htmlLang[l]} aria-current={l === locale ? 'page' : undefined}>{localeNames[l]}</a>
-    ))}
-</nav>
+{locales.length > 1 && (
+    <nav class="lang" aria-label={t(locale).chrome.language}>
+        {locales.map((l) => (
+            <a href={homePath(l)} hreflang={htmlLang[l]} lang={htmlLang[l]} aria-current={l === locale ? 'page' : undefined}>{localeNames[l]}</a>
+        ))}
+    </nav>
+)}

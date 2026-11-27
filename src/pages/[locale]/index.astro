@@ -1,0 +1,13 @@
+---
+// One page per published language other than the default (/id/, ...).
+// The default language is src/pages/index.astro. Which languages are published is set in src/config.ts.
+import HomePage from '../../components/HomePage.astro';
+import { DEFAULT_LOCALE, ENABLED_LOCALES, type Locale } from '../../config';
+
+export function getStaticPaths() {
+    return ENABLED_LOCALES.filter((l) => l !== DEFAULT_LOCALE).map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+---
+<HomePage locale={locale} />
