@@ -1,6 +1,6 @@
 # ventustium.com
 
-Source code for my personal site, [ventustium.com](https://ventustium.com). It is a single page in English and Indonesian ([/id/](https://ventustium.com/id/)) built with [Astro](https://astro.build) and served as static files from [Cloudflare Workers](https://developers.cloudflare.com/workers/static-assets/).
+Source code for my personal site, [ventustium.com](https://ventustium.com). It is a single page built with [Astro](https://astro.build) and served as static files from [Cloudflare Workers](https://developers.cloudflare.com/workers/static-assets/).
 
 > **This repository is public so you can read the code. It is not open source.**
 > All rights are reserved. You may not copy, reuse, modify, or deploy any part of it. See [LICENSE](LICENSE).
@@ -8,9 +8,9 @@ Source code for my personal site, [ventustium.com](https://ventustium.com). It i
 ## Features
 
 - **Scroll scenes.** The page does not scroll. Wheel, swipe and keyboard input switch between full-screen "scenes" (home, code, off-hours, contact, tip jar). Each scene has its own entrance and exit choreography: split-text headings, scrambled labels, a typing effect, and cards that wipe or swing in. All of it uses the Web Animations API in about 400 lines of plain JavaScript, with no animation library.
-- **Bilingual.** English is at `/` and Indonesian is at `/id/`. The text for each language is a JSON file (`src/i18n/en.json`, `src/i18n/id.json`). Every locale is type-checked against the English one, so a missing translation fails the build check. Pages declare `hreflang` alternates and per-locale Open Graph and structured data.
+- **Multilingual-ready.** The text for each language is a JSON file (`src/i18n/en.json`, `src/i18n/id.json`), type-checked against the English one so a missing translation fails the build check. One switch in `src/config.ts` publishes or hides a language: its page, the language switcher, `hreflang` tags, the sitemap and redirects all follow. English is live, and the Indonesian translation is in the repo but currently switched off.
 - **Small and fast.** No UI framework ships to the browser. The page loads one stylesheet, self-hosted JetBrains Mono fonts (latin subset), and three small scripts. Images in scenes you have not opened yet are loaded on demand.
-- **SEO and link previews.** It has schema.org `Person`, `WebSite` and `ProfilePage` JSON-LD, Open Graph and Twitter cards with a 1200×630 image, a sitemap with language alternates, and an [`llms.txt`](public/llms.txt).
+- **SEO and link previews.** It has schema.org `Person`, `WebSite` and `ProfilePage` JSON-LD, Open Graph and Twitter cards with a 1200×630 image, a generated sitemap, and an [`llms.txt`](public/llms.txt).
 - **Graceful fallback.** If JavaScript or the Web Animations API is missing, the scenes become a normal scrolling page. `prefers-reduced-motion` is respected.
 
 ## Stack
@@ -27,8 +27,10 @@ Source code for my personal site, [ventustium.com](https://ventustium.com). It i
 
 ```text
 src/
-  pages/            index.astro (en), id/index.astro (id), 404.astro
-  components/       HomePage, language switcher, pills, cards
+  config.ts         site switches (which languages are published)
+  pages/            index.astro (default language), [locale]/ (other languages),
+                    404.astro, sitemap.xml.ts
+  components/       HomePage, language switcher, ghost word, pills, cards
     scenes/         one component per scene
   layouts/Base.astro  <head>: meta, Open Graph, hreflang, JSON-LD
   i18n/             en.json, id.json (all text) and ui.ts (locale config)
@@ -38,7 +40,7 @@ src/
 public/
   assets/           images, fonts, particles.js and its config
   _headers          cache rules for Cloudflare
-  _redirects        /wallet → /#wallet
+astro.config.mjs    build config; also writes dist/_redirects from src/config.ts
 wrangler.jsonc      Cloudflare deployment config
 ```
 

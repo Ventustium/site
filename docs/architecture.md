@@ -1,15 +1,17 @@
 # Architecture
 
-The site is a single profile page in two languages. Astro renders it to static HTML at build time. Cloudflare Workers serves the files from `dist/` as static assets. There is no server code, database, or Worker script.
+The site is a single profile page, with one copy per published language (see [i18n.md](i18n.md)). Astro renders it to static HTML at build time. Cloudflare Workers serves the files from `dist/` as static assets. There is no server code, database, or Worker script.
 
 ## Project layout
 
 ```text
 src/
+  config.ts             site switches: which languages are published
   pages/
-    index.astro         English home page (/)
-    id/index.astro      Indonesian home page (/id/)
+    index.astro         home page in the default language (/)
+    [locale]/index.astro  home page for each other published language (/id/, ...)
     404.astro           shared not-found page
+    sitemap.xml.ts      generates /sitemap.xml
   layouts/Base.astro    <html> and <head>: meta tags, Open Graph, hreflang, JSON-LD
   components/
     HomePage.astro      the whole page for one locale
@@ -18,7 +20,8 @@ src/
     Card.astro          link card
     Pill.astro          Discord / email pill
     LangSwitch.astro    EN | ID switcher
-    Icons.astro         inline SVG sprite
+    GhostWord.astro     large outlined word behind a scene (SVG)
+    Icons.astro         inline SVG sprite and the ghost word gradient
   i18n/
     en.json, id.json    all visible text
     ui.ts               locale list and helpers
@@ -30,12 +33,12 @@ public/                 copied to dist/ as-is (see deployment.md)
 
 ## How a page is rendered
 
-1. `src/pages/index.astro` and `src/pages/id/index.astro` contain only `<HomePage locale="en" />` or `<HomePage locale="id" />`.
+1. `src/pages/index.astro` renders `<HomePage locale="en" />`. `src/pages/[locale]/index.astro` renders the same component once for every other published language, from `getStaticPaths()`.
 2. `HomePage.astro` wraps everything in `Base.astro` and renders the five scenes in order, passing `locale` down.
 3. Each scene calls `t(locale)` from `src/i18n/ui.ts` for its text and imports links and other shared values from `src/data/site.ts`.
 4. `Base.astro` builds the `<head>` for that locale and imports `home.css`. Astro bundles and hashes the CSS and `home.js` into `/_astro/`.
 
-The result is two HTML files, `dist/index.html` and `dist/id/index.html`, that differ only in language.
+The result is one HTML file per published language (`dist/index.html`, plus `dist/id/index.html` when Indonesian is on), differing only in language. After the build, an integration in `astro.config.mjs` writes `dist/_redirects` (see [deployment.md](deployment.md)).
 
 ## What runs in the browser
 
