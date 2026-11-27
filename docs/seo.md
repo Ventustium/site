@@ -36,4 +36,6 @@ Link previews on Discord, WhatsApp, Telegram and X use `public/assets/image/og.j
 
 ## 404 page
 
-`src/pages/404.astro` is one file that shows every published language. It passes `noindex` to `Base.astro`, which drops the canonical URL, the alternates and the JSON-LD.
+`src/pages/404.astro` is one file for every published language: the default language fills the page, and each other published language gets a short line with its own home link. It passes `noindex` to `Base.astro`, which drops the canonical URL, the alternates and the JSON-LD. Cloudflare still answers with status 404.
+
+The page has the particles background, a centred handwritten "404" ghost word, the `notFound` text from the locale JSON, and a "back to home" pill. It does not load `home.js`, so it must not use `.scene` or `.stage`: under `html.js` those stay hidden until the scene engine activates them, which is why the old page rendered blank. Its animations are plain CSS in the page's `<style>`.

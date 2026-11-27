@@ -1,28 +1,116 @@
 ---
 // Served by Cloudflare for any unknown path (wrangler.jsonc: not_found_handling = "404-page").
-// One static file covers every published language, so it shows each of them.
+// One static file covers every published language: the default one is the page, any other
+// published language gets a smaller block below it.
+//
+// It does not use the scene engine (home.js), so it must not use .scene / .stage: with
+// html.js set, those are hidden until home.js activates them. Its animations are plain CSS.
 import Base from '../layouts/Base.astro';
-import { homePath, htmlLang, locales, t } from '../i18n/ui';
+import GhostWord from '../components/GhostWord.astro';
+import Icons from '../components/Icons.astro';
+import { defaultLocale, homePath, htmlLang, locales, t } from '../i18n/ui';
+
+const others = locales.filter((l) => l !== defaultLocale);
+const s = t(defaultLocale).notFound;
 ---
-<Base locale="en" noindex>
-    <main class="stage">
-        <section class="scene">
-            <div class="scene-inner contact">
-                <p class="label">404</p>
-                {locales.map((l) => {
-                    const s = t(l).notFound;
-                    return (
-                        <div lang={htmlLang[l]} class="nf">
-                            <h1 class="title">{s.title}</h1>
-                            <p class="desc">{s.desc} <a href={homePath(l)} class="accent">{s.back} ↗</a></p>
-                        </div>
-                    );
-                })}
-            </div>
-        </section>
+<Base locale={defaultLocale} noindex>
+    <Icons />
+    <div id="particles-js" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <main class="nf">
+        <GhostWord word="404" />
+        <div class="nf-body">
+            <p class="label">{s.label}</p>
+            <h1 class="title">{s.title.lead}<span class="accent">{s.title.accent}</span></h1>
+            <p class="desc">{s.desc}</p>
+            <a class="pill nf-home" href={homePath(defaultLocale)}><span class="arrow" aria-hidden="true">←</span><span class="t">{s.back}</span></a>
+
+            {others.map((l) => {
+                const o = t(l).notFound;
+                return (
+                    <p class="nf-alt" lang={htmlLang[l]}>
+                        {o.desc} <a href={homePath(l)}>{o.back} →</a>
+                    </p>
+                );
+            })}
+        </div>
     </main>
+
+    <script is:inline src="/assets/js/particles.min.js" defer></script>
+    <script is:inline src="/assets/js/app.js" defer></script>
 </Base>
 
 <style>
-    .nf + .nf { margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--line); }
+    .nf {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 4rem 1.5rem;
+        overflow: hidden;
+        text-align: center;
+    }
+    .nf-body {
+        display: grid;
+        justify-items: center;
+    }
+    .nf .label { justify-content: center; }
+    .nf .desc { margin-inline: auto; }
+
+    /* Centred behind the text, instead of the scene placement in home.css. */
+    .nf :global(.ghost-word) {
+        top: 50%; /* overrides the small-screen top: 14% in home.css */
+        left: 50%;
+        right: auto;
+        translate: -50% -55%;
+        font-size: clamp(10rem, 52vw, 26rem);
+    }
+
+    /* home.css expects home.js to split .accent into characters under html.js;
+       here it stays one piece, so give it the gradient directly. */
+    .nf .accent {
+        background: var(--accent);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .nf-home { margin-top: 2.2rem; --pc: 46, 196, 160; --pc-hi: #5fe0c0; }
+    .nf-home:hover .arrow, .nf-home:focus-visible .arrow { transform: translateX(-4px); }
+
+    .nf-alt {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+        font-size: .85rem;
+        color: var(--muted);
+    }
+    .nf-alt a { color: var(--fg); border-bottom: 1px solid var(--line); }
+    .nf-alt a:hover, .nf-alt a:focus-visible { color: var(--teal); border-color: var(--teal); outline: none; }
+
+    /* Same opener as the scenes: the 404 outline is handwritten (see drawGhost in home.js),
+       and the text follows before it finishes. */
+    .nf :global(.ghost-word text) { animation: nf-write 2s cubic-bezier(.45, 0, .2, 1) both; }
+    .nf-body > * { animation: nf-in .9s var(--ease-out) both; }
+    .nf-body > :nth-child(1) { animation-delay: .8s; }
+    .nf-body > :nth-child(2) { animation-delay: .9s; }
+    .nf-body > :nth-child(3) { animation-delay: 1s; }
+    .nf-body > :nth-child(n + 4) { animation-delay: 1.1s; }
+
+    @keyframes nf-write {
+        from { stroke-dasharray: 0 160; }
+        to { stroke-dasharray: 160 0; }
+    }
+    @keyframes nf-in {
+        from { opacity: 0; filter: blur(8px); transform: translate3d(0, 24px, 0); }
+        to { opacity: 1; filter: blur(0); transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .nf :global(.ghost-word text), .nf-body > * { animation: none; }
+    }
 </style>

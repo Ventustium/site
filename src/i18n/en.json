@@ -64,8 +64,12 @@
         "copied": "copied"
     },
     "notFound": {
-        "title": "page not found",
-        "desc": "This page doesn't exist, or it moved.",
+        "label": "error 404",
+        "title": {
+            "lead": "lost in the ",
+            "accent": "void."
+        },
+        "desc": "This page doesn't exist, or it moved. Nothing to deploy here.",
         "back": "back to home"
     }
 }

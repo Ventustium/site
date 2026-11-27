@@ -64,8 +64,12 @@
         "copied": "tersalin"
     },
     "notFound": {
-        "title": "halaman tidak ditemukan",
-        "desc": "Halaman ini tidak ada, atau sudah dipindah.",
+        "label": "error 404",
+        "title": {
+            "lead": "tersesat di ",
+            "accent": "kehampaan."
+        },
+        "desc": "Halaman ini tidak ada, atau sudah dipindah. Tidak ada yang bisa di-deploy di sini.",
         "back": "kembali ke beranda"
     }
 }
