@@ -146,8 +146,8 @@
                 return { k: [{ transform: 'translate3d(0,' + (dir * 110) + '%,0) rotate(' + (dir * 5) + 'deg)' }, { transform: 'none' }], d: 1000, step: 60, e: EASE_OUT };
             case 'logo':
                 return { k: [{ opacity: 0, filter: 'blur(20px)', transform: 'scale(' + (dir > 0 ? 1.25 : .75) + ')' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], d: 1400, step: 160, e: EASE_OUT };
-            case 'ghost':
-                return { k: [{ opacity: 0, transform: 'translate3d(' + (dir * 35) + 'vw,0,0)' }, { opacity: 1, transform: 'none' }], d: 1600, step: 0, e: EASE_OUT };
+            case 'ghost': // short fade; the outline itself is drawn by drawGhost. End keyframe leaves out opacity so it settles on the CSS value.
+                return { k: [{ opacity: 0 }, {}], d: 500, step: 0, e: EASE_OUT };
             case 'wipe':
                 var fromRight = i % 2 === 1;
                 return {
@@ -157,10 +157,12 @@
                     ], d: 900, step: 70, e: EASE_OUT
                 };
             case 'tilt': // cards swing in like doors from the side
+                // perspective() lives in the keyframes: a CSS perspective on the card's parent
+                // would put the card in a 3D context, and Chrome then drops its backdrop blur.
                 return {
                     k: [
-                        { opacity: 0, transform: 'translate3d(80px,0,0) rotateY(-65deg)', filter: 'blur(4px)' },
-                        { opacity: 1, transform: 'none', filter: 'blur(0)' }
+                        { opacity: 0, transform: 'perspective(900px) translate3d(80px,0,0) rotateY(-65deg)', filter: 'blur(4px)' },
+                        { opacity: 1, transform: 'perspective(900px)', filter: 'blur(0)' }
                     ], d: 1200, step: 110, e: EASE_SPRING
                 };
             case 'pill': // opens from its centre like a capsule
@@ -178,8 +180,8 @@
         switch (type) {
             case 'wipe':
                 return [{ opacity: 1, clipPath: 'inset(0 0 0 0)' }, { opacity: 0, clipPath: i % 2 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)' }];
-            case 'ghost':
-                return [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translate3d(' + (-dir * 25) + 'vw,0,0)' }];
+            case 'ghost': // starts from the CSS opacity
+                return [{ transform: 'none' }, { opacity: 0, transform: 'translate3d(' + (-dir * 25) + 'vw,0,0)' }];
             default:
                 return [{ opacity: 1, filter: 'blur(0)', transform: 'none' }, { opacity: 0, filter: 'blur(8px)', transform: 'translate3d(0,' + (-dir * 30) + 'px,0)' }];
         }
@@ -189,33 +191,68 @@
         return Promise.all(anims.map(function (a) { return a.finished.catch(function () {}); })).then(function () { return anims; });
     }
 
+    /* Ghost word "handwriting": the SVG outline is split into dashes of GHOST_PEN units
+       (font-size is 100 units) and every dash grows at once, so each letter is written by
+       2-3 pens at the same time and all letters are written together. The ghost word is the
+       scene's opener: the rest of the content starts GHOST_LEAD ms in, without waiting for
+       the outline to finish. */
+    var GHOST_PEN = 160;   // dash length: smaller = more pens per letter
+    var GHOST_DRAW = 2000; // ms to write the whole outline
+    var GHOST_LEAD = 800;  // ms before the content starts; its own fade makes it visible around mid-draw
+    function drawGhost(el, delay) {
+        var text = el.querySelector('text');
+        if (!text) return;
+        if (text._draw) text._draw.cancel();
+        text._draw = text.animate(
+            [{ strokeDasharray: '0 ' + GHOST_PEN }, { strokeDasharray: GHOST_PEN + ' 0' }],
+            { duration: GHOST_DRAW, delay: delay, easing: 'cubic-bezier(.45, 0, .2, 1)', fill: 'backwards' }
+        );
+    }
+
     function playIn(scene, dir, baseDelay) {
         var variant = charVariant();
-        var t = baseDelay || 0;
-        var prevType = null;
+        var base = baseDelay || 0;
+        // A scene with a ghost word opens with it; everything else waits for the outline.
+        var lead = !reduce && scene.querySelector('.ghost-word text') ? GHOST_LEAD : 0;
+        // Elements stagger one after another on a timeline. A container with data-track="<ms>"
+        // (the cards, the wallet) runs its own timeline from base + <ms>, in parallel with the
+        // text column instead of waiting for it.
+        var tracks = new Map();
+        function trackOf(el) {
+            var k = el.closest('[data-track]');
+            if (!k || !scene.contains(k)) k = scene;
+            if (!tracks.has(k)) tracks.set(k, { t: base + lead + (k === scene ? 0 : parseInt(k.getAttribute('data-track'), 10) || 0), prev: null });
+            return tracks.get(k);
+        }
         var anims = $$('[data-a]', scene).map(function (el, i) {
             var type = el.getAttribute('data-a');
+            if (type === 'ghost' && !reduce) { // the opener: starts right away, ahead of the timelines
+                drawGhost(el, base);
+                return el.animate(inFrames(type, dir, i).k, { duration: inFrames(type, dir, i).d, delay: base, easing: EASE_OUT, fill: 'backwards' });
+            }
+            var tr = trackOf(el);
             if (type === 'type') { // typewriter runs alongside whatever follows; it doesn't hold the timeline
                 if (reduce) return null;
-                if (prevType) t += 150;
-                prevType = type;
-                typeText(el, t);
-                t += 250;
+                if (tr.prev) tr.t += 150;
+                tr.prev = type;
+                typeText(el, tr.t);
+                tr.t += 250;
                 return null;
             }
-            if (reduce) return el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'backwards' });
+            if (reduce) return el.animate([{ opacity: 0 }, {}], { duration: 300, fill: 'backwards' }); // ends at the CSS opacity
             // data-variant on a split element pins its char animation instead of the random pick
             var pinned = type === 'char' && el.closest('[data-variant]');
             var v = pinned ? pinned.getAttribute('data-variant') : variant;
             var f = inFrames(type, dir, i, v);
-            if (prevType && prevType !== type) t += 120; // small breath between groups
-            prevType = type;
+            if (tr.prev && tr.prev !== type) tr.t += 120; // small breath between groups
+            tr.prev = type;
             // 'backwards' fill: hidden during the delay, then hands control back to CSS (keeps hover effects working)
-            var a = el.animate(f.k, { duration: f.d, delay: t, easing: v === 'flip' && type === 'char' ? EASE_SPRING : f.e, fill: 'backwards' });
-            t += f.step;
+            var a = el.animate(f.k, { duration: f.d, delay: tr.t, easing: v === 'flip' && type === 'char' ? EASE_SPRING : f.e, fill: 'backwards' });
+            tr.t += f.step;
             return a;
         }).filter(Boolean);
-        $$('[data-scramble]', scene).forEach(function (el) { scramble(el, 700, t + 100); });
+        var mainT = tracks.has(scene) ? tracks.get(scene).t : base;
+        $$('[data-scramble]', scene).forEach(function (el) { scramble(el, 700, mainT + 100); });
         return settle(anims);
     }
 

@@ -5,7 +5,7 @@ Profile content lives in two places:
 - `src/data/site.ts` holds facts that do not change between languages: name, email, Discord, links, tech stack and wallet.
 - `src/i18n/en.json` and `src/i18n/id.json` hold every sentence and label (see [i18n.md](i18n.md)).
 
-After changing content, bump `UPDATED` in `src/data/site.ts` and `<lastmod>` in `public/sitemap.xml` (see [seo.md](seo.md)).
+After changing content, bump `UPDATED` in `src/data/site.ts`. It feeds the JSON-LD and the sitemap's `<lastmod>` (see [seo.md](seo.md)).
 
 ## Links
 
@@ -32,7 +32,7 @@ Update `public/llms.txt` as well when links change.
 
 ## Adding a scene
 
-1. Create `src/components/scenes/<Name>.astro`. Copy an existing scene and keep its `section.scene` structure and `data-*` attributes (see [scene-engine.md](scene-engine.md)).
+1. Create `src/components/scenes/<Name>.astro`. Copy an existing scene and keep its `section.scene` structure and `data-*` attributes (see [scene-engine.md](scene-engine.md)). In a two-column scene, the text goes in `div.text` and the side column (cards or panel) gets `data-track` so it animates in parallel.
 2. Give the section a unique `id`. It becomes the URL hash, for example `/#name`.
 3. Add its text under a new key in `en.json` and then `id.json`. Include `nav`, which is the pager label.
 4. Render it in `src/components/HomePage.astro` at the position you want.

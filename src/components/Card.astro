@@ -8,5 +8,7 @@ interface Props {
 }
 
 const { link, anim } = Astro.props;
+// data-a sits on the card, not the <li>: an ancestor with opacity, filter or clip-path
+// cuts the card off from its backdrop, so its blur would pop in only after the animation.
 ---
-<li data-a={anim}><a class="card" rel={link.me ? 'me' : undefined} href={link.url}><span class="row"><span class="t">{link.label}</span><span class="arrow">↗</span></span><span class="url">{displayUrl(link.url)}</span></a></li>
+<li><a class="card" data-a={anim} rel={link.me ? 'me' : undefined} href={link.url}><span class="row"><span class="t">{link.label}</span><span class="arrow">↗</span></span><span class="url">{displayUrl(link.url)}</span></a></li>

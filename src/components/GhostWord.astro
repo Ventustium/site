@@ -1,0 +1,17 @@
+---
+// The large outlined word behind a scene. It is SVG text because CSS text-stroke takes a
+// single colour, while SVG can stroke with the accent gradient (#ghost-grad in Icons.astro).
+// The SVG is 1em tall (the span's font-size) and its width follows the viewBox, so the span
+// sizes and positions exactly like plain text would.
+interface Props { word: string }
+const { word } = Astro.props;
+
+// Units are hundredths of an em (font-size 100 in the viewBox).
+// JetBrains Mono advances every glyph by 60. SPACING is tight display tracking, so
+// neighbouring outlines overlap a little by design.
+const SPACING = -5;
+const width = word.length * (60 + SPACING);
+// With line-height 1, the baseline of JetBrains Mono sits about 0.86em from the top.
+const baseline = 86;
+---
+<span class="ghost-word" data-a="ghost" aria-hidden="true"><svg viewBox={`0 0 ${width} 100`} focusable="false"><text x="0" y={baseline} font-size="100" letter-spacing={SPACING}>{word}</text></svg></span>

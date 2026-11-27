@@ -1,4 +1,5 @@
 ---
+import GhostWord from '../GhostWord.astro';
 import Card from '../Card.astro';
 import Heading from '../Heading.astro';
 import { codeLinks, stack } from '../../data/site';
@@ -9,8 +10,8 @@ const s = t(Astro.props.locale).code;
 ---
 <section class="scene" id="code" data-title={s.nav} data-out="items">
     <div class="scene-inner split">
-        <span class="ghost-word" data-a="ghost" aria-hidden="true">{s.ghost}</span>
-        <div class="copy">
+        <GhostWord word={s.ghost} />
+        <div class="text">
             <p class="label" data-a="fade">{s.label}</p>
             <Heading split="words" {...s.title} />
             <p class="desc" data-a="fade">{s.desc}</p>
@@ -18,7 +19,7 @@ const s = t(Astro.props.locale).code;
                 {stack.map((tech) => <li data-a="fade">{tech}</li>)}
             </ul>
         </div>
-        <ul class="cards">
+        <ul class="cards" data-track="350">
             {codeLinks.map((link) => <Card link={link} anim="wipe" />)}
         </ul>
     </div>
