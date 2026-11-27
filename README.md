@@ -53,7 +53,8 @@ npm install
 npm run dev        # Astro dev server on http://localhost:4321
 npm run check      # type-check, including translation completeness
 npm run preview    # build, then serve dist/ with the Cloudflare runtime (wrangler dev)
-npm run deploy     # build and deploy to Cloudflare (requires wrangler login)
+npm run deploy     # build and deploy production (requires wrangler login)
+npm run deploy:dev # build and deploy the staging Worker
 ```
 
 ## Documentation

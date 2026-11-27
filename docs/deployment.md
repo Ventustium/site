@@ -9,9 +9,52 @@ npm install
 npm run dev       # Astro dev server on http://localhost:4321
 npm run check     # type check, including missing translations
 npm run build     # static output in dist/
-npm run preview   # build, then serve dist/ with the Cloudflare runtime on http://localhost:8787
-npm run deploy    # build and deploy (run `npx wrangler login` once first)
+npm run preview     # build, then serve dist/ with the Cloudflare runtime on http://localhost:8787
+npm run deploy      # build and deploy to production, ventustium.com (run `npx wrangler login` once first)
+npm run deploy:dev  # build and deploy to staging, the separate "site-dev" Worker
+npm run upload      # build and upload a preview version of production without making it live
 ```
+
+## Branches: develop without touching production
+
+Production is the `main` branch. Work happens on `dev` (or any other branch) and reaches `ventustium.com` only when it is merged into `main`.
+
+```bash
+git switch dev          # or: git switch -c my-feature
+# ... edit, npm run check, npm run preview, commit ...
+git push                # builds the branch, never production
+# when it looks right:
+git switch main && git merge dev && git push   # deploys ventustium.com
+```
+
+### Workers Builds settings (dashboard)
+
+Worker `site` → **Settings** → **Build**:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run build` |
+| Deploy command (production branch) | `npx wrangler deploy --env=""` |
+| Production branch | `main` |
+| Builds for non-production branches | on |
+| Non-production branch deploy command | `npx wrangler deploy --env dev` |
+| Environment variable | `NODE_VERSION` = `22` (Astro needs 22.23 or newer) |
+
+With these settings a push to `main` deploys production, and a push to any other branch deploys the staging Worker `site-dev` at `https://site-dev.<account subdomain>.workers.dev`. Every non-production branch shares that one staging Worker, so the last push wins.
+
+If you would rather get one preview URL per branch, leave the non-production deploy command at its default, `npx wrangler versions upload`. It uploads a version of the production Worker without making it live, and its preview URL is shown on the build and in the GitHub status (`preview_urls` is on in `wrangler.jsonc`).
+
+### Environments in wrangler.jsonc
+
+| | Production (top level) | Staging (`env.dev`) |
+| --- | --- | --- |
+| Worker | `site` | `site-dev` |
+| URLs | `ventustium.com`, `www.ventustium.com`, workers.dev | workers.dev only |
+| Deploy | `npm run deploy` or a push to `main` | `npm run deploy:dev` or a push to another branch |
+
+`env.dev` repeats `assets`, `routes: []` and `workers_dev` on purpose, so it never inherits the production custom domains. Because `wrangler.jsonc` has more than one environment, production commands pass `--env=""` to target the top level explicitly; without it Wrangler warns.
+
+Preview and staging URLs are public to anyone who has the link. Put them behind Cloudflare Access if they must stay private.
 
 ## Cloudflare setup
 

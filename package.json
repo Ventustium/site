@@ -7,9 +7,11 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "npm run build && wrangler dev",
+    "preview": "npm run build && wrangler dev --env=\"\"",
     "check": "astro check",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy --env=\"\"",
+    "deploy:dev": "npm run build && wrangler deploy --env dev",
+    "upload": "npm run build && wrangler versions upload --env=\"\""
   },
   "dependencies": {
     "astro": "^7.4.13"

@@ -15,8 +15,11 @@ npm run dev       # http://localhost:4321
 npm run check     # types + missing translations. Must report 0 errors.
 npm run build     # -> dist/
 npm run preview   # build + Cloudflare runtime on http://localhost:8787 (applies _headers, the generated _redirects, 404)
-npm run deploy    # build + wrangler deploy
+npm run deploy      # build + deploy production (ventustium.com)
+npm run deploy:dev  # build + deploy staging (Worker "site-dev", workers.dev only)
 ```
+
+Production is the `main` branch; develop on `dev` and merge when ready (see [docs/deployment.md](docs/deployment.md#branches-develop-without-touching-production)). Never deploy production from a feature branch.
 
 There are no tests. Verify with `check`, `build`, then `preview` plus curl or a headless screenshot. See [docs/deployment.md](docs/deployment.md#verifying-a-change).
 

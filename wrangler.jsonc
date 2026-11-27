@@ -1,5 +1,8 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
+
+    // ---- production: `npm run deploy`, or a push to main (Workers Builds) ----
+
     // Must match the Worker name in the Cloudflare dashboard.
     "name": "site",
     "compatibility_date": "2026-11-01",
@@ -14,6 +17,7 @@
         { "pattern": "www.ventustium.com", "custom_domain": true }
     ],
     "workers_dev": true,
+    // Lets `wrangler versions upload` (non-production branches) get a preview URL.
     "preview_urls": true,
     "observability": {
         "enabled": false,
@@ -22,6 +26,23 @@
             "head_sampling_rate": 1,
             "invocation_logs": true,
             "persist": true
+        }
+    },
+
+    "env": {
+        // ---- staging: `npm run deploy:dev`, or a push to a non-production branch ----
+        // A separate Worker ("site-dev") on its workers.dev URL only. It has no custom
+        // domain, so nothing deployed here can reach ventustium.com. Keys are repeated
+        // on purpose so this environment never inherits the production routes.
+        "dev": {
+            "name": "site-dev",
+            "assets": {
+                "directory": "./dist",
+                "not_found_handling": "404-page"
+            },
+            "routes": [],
+            "workers_dev": true,
+            "preview_urls": true
         }
     }
 }
