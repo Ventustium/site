@@ -35,7 +35,7 @@ const c = t(locale).chrome;
 
     <LangSwitch locale={locale} />
     <nav class="pager" aria-label={c.sections} data-go={c.goTo}></nav>
-    <div class="hint" aria-hidden="true"><span>{c.scroll}</span><span class="track"></span></div>
+    <div class="hint" aria-hidden="true"><span class="chev"></span><span class="chev"></span><span class="chev"></span><span class="lbl">{c.scroll}</span></div>
 
     <!-- particles.js exposes a global, so it and its config stay as plain scripts in public/. -->
     <script is:inline src="/assets/js/particles.min.js" defer></script>
