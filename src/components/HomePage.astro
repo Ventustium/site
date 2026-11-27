@@ -1,0 +1,42 @@
+---
+// The whole home page for one locale. src/pages/index.astro and src/pages/id/index.astro
+// only pick the locale.
+import Base from '../layouts/Base.astro';
+import Icons from './Icons.astro';
+import LangSwitch from './LangSwitch.astro';
+import Intro from './scenes/Intro.astro';
+import Code from './scenes/Code.astro';
+import Play from './scenes/Play.astro';
+import Contact from './scenes/Contact.astro';
+import Wallet from './scenes/Wallet.astro';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const c = t(locale).chrome;
+---
+<Base locale={locale}>
+    <Icons />
+    <div id="particles-js" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Each section is a "scene". data-out: how it leaves (zoom | items | slide).
+         data-a: per-element entrance motion. See src/scripts/home.js. -->
+    <main class="stage">
+        <Intro locale={locale} />
+        <Code locale={locale} />
+        <Play locale={locale} />
+        <Contact locale={locale} />
+        <Wallet locale={locale} />
+    </main>
+
+    <LangSwitch locale={locale} />
+    <nav class="pager" aria-label={c.sections} data-go={c.goTo}></nav>
+    <div class="hint" aria-hidden="true"><span>{c.scroll}</span><span class="track"></span></div>
+
+    <!-- particles.js exposes a global, so it and its config stay as plain scripts in public/. -->
+    <script is:inline src="/assets/js/particles.min.js" defer></script>
+    <script is:inline src="/assets/js/app.js" defer></script>
+    <script src="../scripts/home.js"></script>
+</Base>

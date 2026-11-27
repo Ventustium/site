@@ -1,0 +1,28 @@
+---
+// Served by Cloudflare for any unknown path (wrangler.jsonc: not_found_handling = "404-page").
+// One static file covers both languages, so it shows both.
+import Base from '../layouts/Base.astro';
+import { homePath, htmlLang, locales, t } from '../i18n/ui';
+---
+<Base locale="en" noindex>
+    <main class="stage">
+        <section class="scene">
+            <div class="scene-inner contact">
+                <p class="label">404</p>
+                {locales.map((l) => {
+                    const s = t(l).notFound;
+                    return (
+                        <div lang={htmlLang[l]} class="nf">
+                            <h1 class="title">{s.title}</h1>
+                            <p class="desc">{s.desc} <a href={homePath(l)} class="accent">{s.back} ↗</a></p>
+                        </div>
+                    );
+                })}
+            </div>
+        </section>
+    </main>
+</Base>
+
+<style>
+    .nf + .nf { margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--line); }
+</style>

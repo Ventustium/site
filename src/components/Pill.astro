@@ -1,0 +1,17 @@
+---
+import { discord, person } from '../data/site';
+
+interface Props {
+    kind: 'discord' | 'mail';
+    /** Visible text. Discord always shows the username. */
+    text?: string;
+}
+
+const { kind, text } = Astro.props;
+const isDiscord = kind === 'discord';
+const href = isDiscord ? discord.url : `mailto:${person.email}`;
+const label = isDiscord ? `Discord: ${discord.username}` : `Email: ${person.email}`;
+const shown = isDiscord ? discord.username : text;
+const external = isDiscord ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+<a class={`pill pill--${kind}`} data-a="pill" href={href} {...external} aria-label={label}><svg class="icon" data-a="pop" width="18" height="18" aria-hidden="true"><use href={`#i-${kind}`}/></svg><span class="t" data-scramble>{shown}</span><span class="arrow" aria-hidden="true">↗</span></a>

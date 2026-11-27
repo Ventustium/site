@@ -1,0 +1,11 @@
+---
+// Scene title. home.js splits it into words or chars for the entrance animation.
+interface Props {
+    lead: string;
+    accent: string;
+    split: 'words' | 'chars';
+}
+
+const { lead, accent, split } = Astro.props;
+---
+<h2 class="title" data-split={split}>{lead}<span class="accent">{accent}</span></h2>

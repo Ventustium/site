@@ -1,0 +1,71 @@
+{
+    "meta": {
+        "title": "Ventustium · Kevin Luis Linuhung — System Infrastructure & DevOps",
+        "description": "Ventustium is Kevin Luis Linuhung, a system infrastructure and DevOps enthusiast from Indonesia working with Linux, Docker, Kubernetes, MikroTik and Cloudflare. Projects, contact and tip jar.",
+        "socialDescription": "System infrastructure & DevOps enthusiast. Code, side projects, and where to find me.",
+        "ogImageAlt": "Ventustium logo with the text Kevin Luis Linuhung, system infrastructure and DevOps enthusiast",
+        "jobTitle": "System Infrastructure & DevOps Enthusiast",
+        "bio": "Kevin Luis Linuhung, known online as Ventustium, is a system infrastructure and DevOps enthusiast from Indonesia. He works with Linux, Docker, Kubernetes, MikroTik, Ruijie and Cloudflare, writes PHP with PostgreSQL and MySQL, and translates Japanese web novels."
+    },
+    "chrome": {
+        "language": "Language",
+        "sections": "Sections",
+        "goTo": "go to",
+        "scroll": "scroll"
+    },
+    "home": {
+        "about": "system infrastructure & DevOps enthusiast",
+        "email": "email"
+    },
+    "code": {
+        "nav": "code",
+        "label": "code",
+        "ghost": "code",
+        "title": {
+            "lead": "things i build ",
+            "accent": "& break"
+        },
+        "desc": "Side projects, experiments and the configs that keep my servers alive. The source lives here.",
+        "stackLabel": "Tech stack"
+    },
+    "play": {
+        "nav": "off-hours",
+        "label": "off-hours",
+        "ghost": "play",
+        "title": {
+            "lead": "when i'm not ",
+            "accent": "deploying"
+        },
+        "desc": "Clicking circles to the beat, whatever is in my Steam library, and translating web novels I can't stop reading."
+    },
+    "contact": {
+        "nav": "contact",
+        "label": "contact",
+        "ghost": "hello",
+        "title": {
+            "lead": "need something? ",
+            "accent": "say hi."
+        },
+        "desc": "Work, collaboration, or just a question. My inbox is open. Based in Indonesia (UTC+7).",
+        "or": "or find me on"
+    },
+    "wallet": {
+        "nav": "tip jar",
+        "label": "tip jar",
+        "ghost": "tip",
+        "title": {
+            "lead": "send some ",
+            "accent": "gas"
+        },
+        "desc": "If something here helped you, a tip is always appreciated. Ethereum network only, so double-check before sending.",
+        "qrAlt": "QR code for the Ethereum address",
+        "network": "network",
+        "copy": "copy",
+        "copied": "copied"
+    },
+    "notFound": {
+        "title": "page not found",
+        "desc": "This page doesn't exist, or it moved.",
+        "back": "back to home"
+    }
+}

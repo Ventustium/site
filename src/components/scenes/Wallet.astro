@@ -1,0 +1,30 @@
+---
+import Heading from '../Heading.astro';
+import { wallet } from '../../data/site';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props { locale: Locale }
+const s = t(Astro.props.locale).wallet;
+---
+<section class="scene" id="wallet" data-title={s.nav} data-out="items">
+    <div class="scene-inner split">
+        <span class="ghost-word" data-a="ghost" aria-hidden="true">{s.ghost}</span>
+        <div class="copy">
+            <p class="label" data-a="fade">{s.label}</p>
+            <Heading split="words" {...s.title} />
+            <p class="desc" data-a="fade">{s.desc}</p>
+        </div>
+        <div class="wallet" data-a="rise">
+            <!-- img[data-src] is loaded by home.js only when this scene is opened. -->
+            <div class="qr">
+                <img data-src={wallet.qr} width="200" height="200" alt={s.qrAlt}>
+                <img class="qr-logo" data-src={wallet.logo} width="48" height="48" alt="">
+            </div>
+            <p class="net"><span>{s.network}</span><span>{wallet.network}</span></p>
+            <div class="addr">
+                <code id="eth-address">{wallet.address}</code>
+                <button type="button" class="copy-btn" data-copy="#eth-address" data-done={s.copied}>{s.copy}</button>
+            </div>
+        </div>
+    </div>
+</section>

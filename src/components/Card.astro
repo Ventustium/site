@@ -1,0 +1,12 @@
+---
+import { displayUrl, type LinkCard } from '../data/site';
+
+interface Props {
+    link: LinkCard;
+    /** Entrance animation played by home.js (wipe | tilt | ...). */
+    anim: string;
+}
+
+const { link, anim } = Astro.props;
+---
+<li data-a={anim}><a class="card" rel={link.me ? 'me' : undefined} href={link.url}><span class="row"><span class="t">{link.label}</span><span class="arrow">↗</span></span><span class="url">{displayUrl(link.url)}</span></a></li>

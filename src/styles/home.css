@@ -1,0 +1,620 @@
+/* ventustium — home
+   Fixed-viewport "scenes": scrolling swaps content instead of moving the page. */
+
+:root {
+    --bg: #111;
+    --fg: #ccc;
+    --fg-strong: #fff;
+    --muted: #6b6b6b;
+    --line: rgba(255, 255, 255, .08);
+    --teal: #2ec4a0;
+    --violet: #7b4dff;
+    --pink: #e8578a;
+    --accent: linear-gradient(100deg, var(--teal), var(--violet) 55%, var(--pink));
+    --mono: Iosevka, "Iosevka Term", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    color-scheme: dark;
+}
+
+/* Self-hosted JetBrains Mono (latin subset), no request to Google Fonts. */
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/jetbrains-mono-latin-400.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 700; font-display: swap; src: url("/assets/fonts/jetbrains-mono-latin-700.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 800; font-display: swap; src: url("/assets/fonts/jetbrains-mono-latin-800.woff2") format("woff2"); }
+
+@property --gx { syntax: "<percentage>"; inherits: true; initial-value: 30%; }
+@property --gy { syntax: "<percentage>"; inherits: true; initial-value: 40%; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 20px/1.5 var(--mono);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--violet); color: #fff; }
+
+/* ---------- background ---------- */
+
+#particles-js {
+    position: fixed;
+    inset: -4%;
+    z-index: 0;
+    opacity: .55;
+    transition: transform 1.8s var(--ease-out);
+    transform: translate3d(0, var(--py, 0), 0) scale(var(--ps, 1));
+}
+
+.glow {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(40vmax 40vmax at var(--gx) var(--gy), rgba(123, 77, 255, .16), transparent 70%),
+        radial-gradient(30vmax 30vmax at calc(100% - var(--gx)) calc(100% - var(--gy)), rgba(46, 196, 160, .10), transparent 70%);
+    filter: hue-rotate(var(--gh, 0deg));
+    transition: --gx 1.8s var(--ease-out), --gy 1.8s var(--ease-out), filter 1.8s var(--ease-out);
+}
+
+.grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- scenes ---------- */
+
+.stage { position: relative; z-index: 2; }
+
+.scene {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 5rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* JS mode: scenes stack in a fixed viewport, only the active one is shown. */
+.js body { overflow: hidden; overscroll-behavior: none; }
+.js .stage { position: fixed; inset: 0; touch-action: none; }
+.js .scene { position: absolute; inset: 0; min-height: 0; visibility: hidden; }
+.js .scene.is-active, .js .scene.is-leaving { visibility: visible; }
+.js .scene.is-leaving { pointer-events: none; }
+
+.scene-inner {
+    width: min(100%, 1100px);
+    position: relative;
+}
+
+.accent,
+.js .accent .c {
+    background: var(--accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+/* Each char carries its own gradient once split, so the parent must not. */
+.js .accent { background: none; color: inherit; }
+/* --i / --n (char index / word length) are set by home.js so the gradient spans the word. */
+.js .accent .c {
+    background-size: calc(var(--n, 1) * 100%) 100%;
+    background-position: calc(var(--i, 0) / max(var(--n, 1) - 1, 1) * 100%) 0;
+}
+
+/* split helpers */
+.wd { display: inline-block; white-space: nowrap; }
+.c { display: inline-block; will-change: transform, opacity; transform-origin: 50% 100%; }
+.w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: .1em;
+    margin-bottom: -.1em;
+}
+.w > span { display: inline-block; will-change: transform; }
+
+/* ---------- intro ---------- */
+
+.intro {
+    text-align: center;
+    display: grid;
+    justify-items: center;
+}
+/* The logo PNG has ~22% transparent padding top and bottom; negative margins trim it visually. */
+/* h1 holds the logo and the name; reset heading defaults so it looks like before. */
+.intro .brand { line-height: 0; font-weight: inherit; font-size: inherit; display: grid; justify-items: center; }
+.intro .brand img {
+    width: min(560px, 86vw);
+    height: auto;
+    margin: -12% 0 -11%;
+    filter: drop-shadow(0 10px 50px rgba(123, 77, 255, .28));
+}
+.intro .name {
+    display: block;
+    line-height: 1.5;
+    text-transform: lowercase;
+    margin-top: 1.6rem;
+    font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: #ececec;
+    perspective: 600px;
+}
+.about .rest { color: transparent; }
+/* The caret must not take part in line layout. An in-flow inline-block between .typed and
+   .rest is a line-break opportunity (a half-typed "DevOps e|nthusiast" wrapped mid-word) and
+   at the end of the text it can push the line over the width, making the centred text jump.
+   Absolutely positioned with no offsets, it is drawn at its static position (right after the
+   last typed character) but is out of flow, so it neither takes space nor allows a break. */
+.about.typing .typed::after {
+    content: "";
+    position: absolute;
+    width: .55em;
+    height: 1.1em;
+    margin-top: .2em;
+    background: var(--teal);
+    animation: caret 1s steps(1) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+.intro .about {
+    margin-top: .4rem;
+    font-size: clamp(1rem, 2.1vw, 1.35rem);
+    color: var(--fg);
+}
+/* ---------- pills (discord / email buttons) ---------- */
+
+.pills {
+    margin-top: 2.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: .75rem;
+}
+.pills .or { font-size: clamp(.95rem, 1.6vw, 1.1rem); color: #9a9a9a; letter-spacing: .02em; }
+.pill {
+    --pc: 255, 255, 255;      /* brand colour as r,g,b */
+    --pc-hi: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .55rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: .85rem;
+    background: rgba(255, 255, 255, .02);
+    backdrop-filter: blur(6px);
+    transition: border-color .4s, background .4s, transform .5s var(--ease-out), box-shadow .4s;
+}
+.pill--discord { --pc: 88, 101, 242; --pc-hi: #8b94ff; }
+.pill--mail { --pc: 46, 196, 160; --pc-hi: #5fe0c0; }
+.pill .icon { color: rgb(var(--pc)); flex: none; transition: transform .5s var(--ease-out); }
+.pill .t { color: var(--fg-strong); }
+.pill .arrow { color: var(--muted); transition: transform .4s var(--ease-out), color .3s; }
+.pill:hover, .pill:focus-visible {
+    border-color: rgba(var(--pc), .6);
+    background: rgba(var(--pc), .1);
+    box-shadow: 0 0 24px rgba(var(--pc), .25);
+    transform: translateY(-2px);
+    outline: none;
+}
+.pill:hover .icon, .pill:focus-visible .icon { transform: rotate(-10deg) scale(1.1); }
+.pill:hover .arrow, .pill:focus-visible .arrow { color: var(--pc-hi); transform: translate(3px, -3px); }
+.contact .pills { margin-top: 2rem; }
+
+/* ---------- content slides ---------- */
+
+.ghost-word {
+    position: absolute;
+    right: -3vw;
+    top: 50%;
+    translate: 0 -58%;
+    font-size: clamp(7rem, 24vw, 22rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.05em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, .06);
+    pointer-events: none;
+    user-select: none;
+    z-index: -1;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    font-size: .8rem;
+    letter-spacing: .25em;
+    color: var(--muted);
+    margin-bottom: 1.6rem;
+}
+.label::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    rotate: 45deg;
+}
+.label::after {
+    content: "";
+    width: 4rem;
+    height: 1px;
+    background: var(--line);
+}
+
+.title {
+    font-size: clamp(2rem, 5.4vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -.03em;
+    color: var(--fg-strong);
+    perspective: 600px;
+}
+.js .accent .w > span {
+    background: var(--accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.desc {
+    margin-top: 1.4rem;
+    max-width: 34ch;
+    font-size: clamp(.95rem, 1.6vw, 1.1rem);
+    line-height: 1.7;
+    color: #9a9a9a;
+}
+
+/* text column + link cards */
+.split {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: center;
+}
+.split--flip .copy { order: 2; }
+.split--flip .cards { order: 1; }
+
+.cards {
+    list-style: none;
+    display: grid;
+    gap: 1rem;
+    perspective: 900px;
+}
+.card {
+    display: grid;
+    gap: .35rem;
+    padding: 1.3rem 1.4rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .025);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+    transition: border-color .4s, transform .5s var(--ease-out), background .4s;
+}
+.card::before { /* gradient sheen that sweeps in on hover */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transform: translateX(-30%);
+    transition: opacity .5s, transform .7s var(--ease-out);
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+}
+.card .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.card .t { font-size: clamp(1.15rem, 2.2vw, 1.5rem); font-weight: 700; color: var(--fg-strong); }
+.card .url { font-size: .78rem; color: var(--muted); overflow-wrap: anywhere; }
+.card .arrow { color: var(--muted); transition: transform .4s var(--ease-out), color .3s; }
+.card:hover, .card:focus-visible { border-color: rgba(46, 196, 160, .45); transform: translateY(-3px); background: rgba(255, 255, 255, .04); outline: none; }
+.card:hover::before, .card:focus-visible::before { opacity: .35; transform: none; }
+.card:hover .arrow, .card:focus-visible .arrow { color: var(--teal); transform: translate(3px, -3px); }
+
+/* tech stack chips */
+.stack {
+    list-style: none;
+    margin-top: 1.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    max-width: 36ch;
+}
+.stack li {
+    font-size: .72rem;
+    letter-spacing: .04em;
+    color: var(--fg);
+    padding: .25rem .6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .025);
+}
+
+/* tip jar */
+.wallet {
+    justify-self: center;
+    width: min(100%, 360px);
+    display: grid;
+    gap: 1rem;
+    padding: 1.4rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .025);
+    backdrop-filter: blur(8px);
+}
+.wallet .qr { position: relative; justify-self: center; line-height: 0; }
+.wallet .qr img:first-child { width: 200px; height: 200px; border-radius: 10px; background: #fff; }
+.wallet .qr-logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: 44px;
+    height: 44px;
+    padding: 4px;
+    border-radius: 50%;
+    background: #fff;
+}
+.wallet .net { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); }
+.wallet .net span:last-child { color: var(--fg-strong); }
+.wallet .addr {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .6rem .7rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, .25);
+}
+.wallet code { font: inherit; font-size: .72rem; color: var(--fg); overflow-wrap: anywhere; flex: 1; user-select: all; }
+.copy-btn {
+    all: unset;
+    cursor: pointer;
+    flex: none;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    padding: .3rem .6rem;
+    border-radius: 6px;
+    color: var(--teal);
+    border: 1px solid rgba(46, 196, 160, .35);
+    transition: background .3s, color .3s;
+}
+.copy-btn:hover, .copy-btn:focus-visible { background: rgba(46, 196, 160, .12); }
+.copy-btn.is-done { color: #fff; background: rgba(46, 196, 160, .3); }
+
+/* contact */
+.contact { text-align: center; display: grid; justify-items: center; }
+.contact .label { justify-content: center; }
+.contact .desc { margin-inline: auto; }
+.mail {
+    margin-top: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .8rem;
+    font-size: clamp(1.1rem, 3.4vw, 2rem);
+    font-weight: 700;
+    color: var(--fg-strong);
+    padding-bottom: .4rem;
+    position: relative;
+}
+.mail::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: right;
+    transition: transform .6s var(--ease-out);
+}
+.mail .arrow { color: var(--teal); transition: transform .4s var(--ease-out); }
+.mail:hover::after, .mail:focus-visible::after { transform: scaleX(.15); }
+.mail:hover .arrow, .mail:focus-visible .arrow { transform: translate(4px, -4px); }
+.mail:focus-visible { outline: none; }
+
+/* ---------- chrome: pager, hint ---------- */
+
+.pager, .hint { display: none; }
+.js .pager, .js .hint { display: flex; }
+
+.pager {
+    position: fixed;
+    right: clamp(1rem, 3vw, 2.5rem);
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 3;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .2rem;
+}
+/* Each item: small label + vertical bar. The active bar grows and turns teal.
+   Wide screens show every label; smaller screens show bars only and flash the
+   active label after a scene change (see the media queries below). */
+.pager button {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .7rem;
+    min-height: 30px;
+    padding-left: .5rem;
+}
+.pager .lbl {
+    font-size: .62rem;
+    letter-spacing: .2em;
+    color: var(--muted);
+    white-space: nowrap;
+    opacity: .7;
+    transition: opacity .4s, color .3s, transform .5s var(--ease-out);
+}
+.pager .bar {
+    width: 2px;
+    height: 14px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .22);
+    transition: height .5s var(--ease-out), background .3s, box-shadow .3s;
+}
+.pager button:hover .bar { background: rgba(255, 255, 255, .6); }
+.pager button:hover .lbl { opacity: 1; color: var(--fg); }
+.pager button[aria-current="true"] .bar { height: 30px; background: var(--teal); box-shadow: 0 0 12px var(--teal); }
+.pager button[aria-current="true"] .lbl { opacity: 1; color: var(--fg-strong); }
+.pager button:focus-visible { outline: none; }
+.pager button:focus-visible .lbl { opacity: 1; color: var(--teal); }
+.pager button:focus-visible .bar { background: var(--teal); }
+
+/* wide screens: every label is visible, so keep scene content clear of them */
+@media (min-width: 1280px) {
+    .js .scene { padding-inline: 8.5rem; }
+}
+
+/* below 1280px: bars only. Labels show while the pager is touched (.is-touch, kept 1.8s after
+   the finger lifts), on keyboard focus, and on mouse hover. Not on swipe/scroll changes.
+   Selectors use "button ... .lbl" to outrank the base active/hover rules above, which
+   would otherwise keep the current label (or a tapped one, via sticky :hover) visible. */
+@media (max-width: 1279px) {
+    .pager .lbl {
+        padding: .2rem .5rem;
+        border-radius: 6px;
+        background: rgba(17, 17, 17, .75);
+        backdrop-filter: blur(6px);
+    }
+    .pager button .lbl,
+    .pager button:hover .lbl,
+    .pager button[aria-current="true"] .lbl { opacity: 0; transform: translateX(6px); }
+    /* Not :focus-within: a clicked button keeps focus, which would pin the labels open. */
+    .pager.is-touch button .lbl,
+    .pager:has(:focus-visible) button .lbl { opacity: 1; transform: none; }
+    .pager.is-touch button:not([aria-current="true"]) .lbl { opacity: .85; }
+}
+/* Hover reveal only on real pointers: touch screens keep :hover stuck after a tap. */
+@media (max-width: 1279px) and (hover: hover) and (pointer: fine) {
+    .pager:hover button .lbl { opacity: 1; transform: none; }
+    .pager:hover button:not([aria-current="true"]) .lbl { opacity: .8; }
+}
+@media (min-width: 861px) and (max-width: 1279px) {
+    .js .scene { padding-inline: 4rem; }
+}
+
+/* narrow / touch screens: vertical bars on the right, labels hidden so they don't cover
+   content. They show only while the pager is touched (.is-touch, see the block above). */
+@media (max-width: 860px) {
+    .pager { gap: .1rem; }
+    .pager button { min-height: 20px; gap: .5rem; }
+    .pager .bar { height: 9px; }
+    .pager button[aria-current="true"] .bar { height: 20px; }
+
+    /* contact: left-aligned like the other content scenes on small screens */
+    .contact { text-align: left; justify-items: start; }
+    .contact .label { justify-content: flex-start; }
+    .contact .desc { margin-inline: 0; }
+    .contact .pills { justify-content: flex-start; }
+}
+
+.hint {
+    position: fixed;
+    left: 50%;
+    bottom: clamp(1rem, 3vw, 2rem);
+    translate: -50% 0;
+    z-index: 3;
+    flex-direction: column;
+    align-items: center;
+    gap: .6rem;
+    font-size: .7rem;
+    letter-spacing: .3em;
+    color: var(--muted);
+    transition: opacity .6s;
+}
+.hint .track { width: 1px; height: 2.6rem; background: var(--line); position: relative; overflow: hidden; }
+.hint .track::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 40%;
+    background: var(--teal);
+    animation: drip 1.8s var(--ease-out) infinite;
+}
+.hint.is-hidden { opacity: 0; }
+
+@keyframes drip {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(260%); }
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 640px) {
+    body { font-size: 16px; }
+    .pager { right: .5rem; }
+    .scene { padding: 4rem 1.25rem; }
+    .pills { margin-top: 1.6rem; }
+    .ghost-word { right: -8vw; top: 14%; }
+    .card { padding: 1rem 1.1rem; }
+    .desc { margin-top: 1rem; }
+}
+
+@media (max-width: 860px) {
+    .split { grid-template-columns: 1fr; gap: 1.8rem; }
+    .split--flip .copy { order: 1; }
+    .split--flip .cards { order: 2; }
+    .cards { gap: .7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #particles-js, .glow { transition: none; }
+    .hint .track::after { animation: none; }
+}
+
+/* short phones: keep the busiest slides inside one viewport */
+@media (max-width: 860px) and (max-height: 760px) {
+    .scene { padding: 3.2rem 1.1rem; }
+    .title { font-size: clamp(1.7rem, 8vw, 2.4rem); }
+    .desc { font-size: .88rem; line-height: 1.55; margin-top: .7rem; }
+    .card { padding: .75rem .95rem; gap: .15rem; }
+    .card .t { font-size: 1.05rem; }
+    .label { margin-bottom: .9rem; }
+    .stack { margin-top: .8rem; gap: .3rem; }
+    .stack li { font-size: .66rem; padding: .15rem .5rem; }
+    .wallet { padding: 1rem; gap: .7rem; }
+    .wallet .qr img:first-child { width: 150px; height: 150px; }
+    .wallet .qr-logo { width: 34px; height: 34px; }
+}
+
+/* ---------- language switcher ---------- */
+
+.lang {
+    position: fixed;
+    top: clamp(1rem, 3vw, 2rem);
+    right: clamp(1rem, 3vw, 2.5rem);
+    z-index: 3;
+    display: flex;
+    gap: .25rem;
+    font-size: .7rem;
+    letter-spacing: .2em;
+}
+.lang a {
+    padding: .3rem .55rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    transition: color .3s, border-color .3s, background .3s;
+}
+.lang a:hover, .lang a:focus-visible { color: var(--fg-strong); border-color: rgba(255, 255, 255, .3); outline: none; }
+.lang a[aria-current="page"] { color: var(--fg-strong); border-color: var(--teal); background: rgba(46, 196, 160, .12); }
+@media (max-width: 640px) {
+    .lang { top: .75rem; right: .75rem; }
+}

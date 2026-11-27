@@ -1,0 +1,71 @@
+{
+    "meta": {
+        "title": "Ventustium · Kevin Luis Linuhung — Infrastruktur Sistem & DevOps",
+        "description": "Ventustium adalah Kevin Luis Linuhung, penggemar infrastruktur sistem dan DevOps dari Indonesia yang bekerja dengan Linux, Docker, Kubernetes, MikroTik, dan Cloudflare. Proyek, kontak, dan tip jar.",
+        "socialDescription": "Penggemar infrastruktur sistem & DevOps. Kode, proyek sampingan, dan tempat menemukan saya.",
+        "ogImageAlt": "Logo Ventustium dengan teks Kevin Luis Linuhung, penggemar infrastruktur sistem dan DevOps",
+        "jobTitle": "Penggemar Infrastruktur Sistem & DevOps",
+        "bio": "Kevin Luis Linuhung, dikenal online sebagai Ventustium, adalah penggemar infrastruktur sistem dan DevOps dari Indonesia. Ia bekerja dengan Linux, Docker, Kubernetes, MikroTik, Ruijie, dan Cloudflare, menulis PHP dengan PostgreSQL dan MySQL, serta menerjemahkan web novel Jepang."
+    },
+    "chrome": {
+        "language": "Bahasa",
+        "sections": "Bagian",
+        "goTo": "ke",
+        "scroll": "gulir"
+    },
+    "home": {
+        "about": "penggemar infrastruktur sistem & DevOps",
+        "email": "email"
+    },
+    "code": {
+        "nav": "kode",
+        "label": "kode",
+        "ghost": "kode",
+        "title": {
+            "lead": "yang saya bangun ",
+            "accent": "& bongkar"
+        },
+        "desc": "Proyek sampingan, eksperimen, dan konfigurasi yang menjaga server saya tetap hidup. Kodenya ada di sini.",
+        "stackLabel": "Teknologi"
+    },
+    "play": {
+        "nav": "waktu luang",
+        "label": "waktu luang",
+        "ghost": "main",
+        "title": {
+            "lead": "saat tidak sedang ",
+            "accent": "deploy"
+        },
+        "desc": "Mengklik lingkaran mengikuti irama, main apa saja yang ada di library Steam, dan menerjemahkan web novel yang tidak bisa berhenti saya baca."
+    },
+    "contact": {
+        "nav": "kontak",
+        "label": "kontak",
+        "ghost": "halo",
+        "title": {
+            "lead": "butuh sesuatu? ",
+            "accent": "sapa saja."
+        },
+        "desc": "Pekerjaan, kolaborasi, atau sekadar bertanya. Inbox saya terbuka. Berbasis di Indonesia (UTC+7).",
+        "or": "atau temukan saya di"
+    },
+    "wallet": {
+        "nav": "tip jar",
+        "label": "tip jar",
+        "ghost": "tip",
+        "title": {
+            "lead": "kirim sedikit ",
+            "accent": "gas"
+        },
+        "desc": "Kalau ada yang membantu di sini, tip selalu dihargai. Hanya jaringan Ethereum, jadi periksa lagi sebelum mengirim.",
+        "qrAlt": "Kode QR untuk alamat Ethereum",
+        "network": "jaringan",
+        "copy": "salin",
+        "copied": "tersalin"
+    },
+    "notFound": {
+        "title": "halaman tidak ditemukan",
+        "desc": "Halaman ini tidak ada, atau sudah dipindah.",
+        "back": "kembali ke beranda"
+    }
+}

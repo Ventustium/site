@@ -1,0 +1,22 @@
+---
+import Card from '../Card.astro';
+import Heading from '../Heading.astro';
+import { playLinks } from '../../data/site';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props { locale: Locale }
+const s = t(Astro.props.locale).play;
+---
+<section class="scene" id="play" data-title={s.nav} data-out="slide">
+    <div class="scene-inner split split--flip">
+        <span class="ghost-word" data-a="ghost" aria-hidden="true">{s.ghost}</span>
+        <div class="copy">
+            <p class="label" data-a="fade">{s.label}</p>
+            <Heading split="chars" {...s.title} />
+            <p class="desc" data-a="fade">{s.desc}</p>
+        </div>
+        <ul class="cards">
+            {playLinks.map((link) => <Card link={link} anim="tilt" />)}
+        </ul>
+    </div>
+</section>

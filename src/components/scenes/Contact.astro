@@ -1,0 +1,22 @@
+---
+import Heading from '../Heading.astro';
+import Pill from '../Pill.astro';
+import { person } from '../../data/site';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props { locale: Locale }
+const s = t(Astro.props.locale).contact;
+---
+<section class="scene" id="contact" data-title={s.nav} data-out="zoom">
+    <div class="scene-inner contact">
+        <span class="ghost-word" data-a="ghost" aria-hidden="true">{s.ghost}</span>
+        <p class="label" data-a="fade">{s.label}</p>
+        <Heading split="words" {...s.title} />
+        <p class="desc" data-a="fade">{s.desc}</p>
+        <a class="mail" data-a="rise" href={`mailto:${person.email}`}><span class="t" data-scramble>{person.email}</span> <span class="arrow">↗</span></a>
+        <div class="pills">
+            <span class="or" data-a="fade">{s.or}</span>
+            <Pill kind="discord" />
+        </div>
+    </div>
+</section>

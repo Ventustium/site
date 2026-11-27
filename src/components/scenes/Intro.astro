@@ -1,0 +1,21 @@
+---
+import Pill from '../Pill.astro';
+import { person } from '../../data/site';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props { locale: Locale }
+const s = t(Astro.props.locale);
+---
+<section class="scene" id="home" data-title="home" data-out="zoom">
+    <div class="scene-inner intro">
+        <h1 class="brand">
+            <img data-a="logo" src="/assets/image/600px-logo.webp" width="600" height="338" alt="Ventustium" fetchpriority="high">
+            <span class="name" data-split="chars" data-variant="scatter">{person.name}</span>
+        </h1>
+        <p class="about" data-a="type">{s.home.about}</p>
+        <div class="pills">
+            <Pill kind="discord" />
+            <Pill kind="mail" text={s.home.email} />
+        </div>
+    </div>
+</section>
