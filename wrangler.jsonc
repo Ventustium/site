@@ -31,16 +31,18 @@
 
     "env": {
         // ---- staging: `npm run deploy:dev`, or a push to a non-production branch ----
-        // A separate Worker ("site-dev") on its workers.dev URL only. It has no custom
-        // domain, so nothing deployed here can reach ventustium.com. Keys are repeated
-        // on purpose so this environment never inherits the production routes.
+        // A separate Worker ("site-dev") on dev-ui.ventustium.com and its workers.dev URL.
+        // It never touches ventustium.com or www. Keys are repeated on purpose so this
+        // environment never inherits the production routes.
         "dev": {
             "name": "site-dev",
             "assets": {
                 "directory": "./dist",
                 "not_found_handling": "404-page"
             },
-            "routes": [],
+            "routes": [
+                { "pattern": "dev-ui.ventustium.com", "custom_domain": true }
+            ],
             "workers_dev": true,
             "preview_urls": true
         }

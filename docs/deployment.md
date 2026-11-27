@@ -40,7 +40,7 @@ Worker `site` → **Settings** → **Build**:
 | Non-production branch deploy command | `npx wrangler deploy --env dev` |
 | Environment variable | `NODE_VERSION` = `22` (Astro needs 22.23 or newer) |
 
-With these settings a push to `main` deploys production, and a push to any other branch deploys the staging Worker `site-dev` at `https://site-dev.<account subdomain>.workers.dev`. Every non-production branch shares that one staging Worker, so the last push wins.
+With these settings a push to `main` deploys production, and a push to any other branch deploys the staging Worker `site-dev` at `https://dev-ui.ventustium.com` (also `https://site-dev.<account subdomain>.workers.dev`). Every non-production branch shares that one staging Worker, so the last push wins.
 
 If you would rather get one preview URL per branch, leave the non-production deploy command at its default, `npx wrangler versions upload`. It uploads a version of the production Worker without making it live, and its preview URL is shown on the build and in the GitHub status (`preview_urls` is on in `wrangler.jsonc`).
 
@@ -49,10 +49,10 @@ If you would rather get one preview URL per branch, leave the non-production dep
 | | Production (top level) | Staging (`env.dev`) |
 | --- | --- | --- |
 | Worker | `site` | `site-dev` |
-| URLs | `ventustium.com`, `www.ventustium.com`, workers.dev | workers.dev only |
+| URLs | `ventustium.com`, `www.ventustium.com`, workers.dev | `dev-ui.ventustium.com`, workers.dev |
 | Deploy | `npm run deploy` or a push to `main` | `npm run deploy:dev` or a push to another branch |
 
-`env.dev` repeats `assets`, `routes: []` and `workers_dev` on purpose, so it never inherits the production custom domains. Because `wrangler.jsonc` has more than one environment, production commands pass `--env=""` to target the top level explicitly; without it Wrangler warns.
+`env.dev` repeats `assets`, `routes` (only `dev-ui.ventustium.com`) and `workers_dev` on purpose, so it never inherits the production custom domains. Wrangler creates the `dev-ui` DNS record and certificate on the first staging deploy. Because `wrangler.jsonc` has more than one environment, production commands pass `--env=""` to target the top level explicitly; without it Wrangler warns.
 
 Preview and staging URLs are public to anyone who has the link. Put them behind Cloudflare Access if they must stay private.
 
